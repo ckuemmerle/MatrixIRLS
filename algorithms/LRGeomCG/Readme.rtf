@@ -1,0 +1,50 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1265\cocoasubrtf200
+\cocoascreenfonts1{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww16720\viewh5700\viewkind0
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
+
+\f0\fs24 \cf0 This is a collection of MATLAB files accompanying the paper\
+      "Low-rank matrix completion by Riemannian optimization"\
+by Bart Vandereycken, SIAM Journal of Optimization, 2013\
+\
+If there are any problems or bugs, feel free to email me at bartv@math.princeton.edu .\
+\
+0) VERSION HISTORY\
+- Ver 1, 15 Nov 2011: initial release\
+- Ver 2, 1 Mar 2012: added updateSparse MEX files.\
+- Ver 3, 1 Jul 2012: major cleanup.\
+- Ver 4, 15 Aug 2012: major speedup (fixed bug such that code is now about 20% faster. Also include MEX files with BLAS which gains another 20% or so).\
+- Ver 5, 17 Jan 2013: fixed a bug in the stagnation detection and cached a few calculations: sped up the code a little more.\
+- Ver 6, 6 Jan 2014: bug fix for large rank matrices (thanks to Ke Wei, Univ. of Oxford).\
+- Ver 7, 13 Mar 2014: added Windows MEX files, not tested though (thanks to Nicolas Boumal, Univ. cath. de Louvain).\
+- Ver 8, 30 Jun 2014: added Windows MEX files that compile with "use_blas = true", not tested though (thanks to Nicolas Boumal, Univ. cath. de Louvain) \
+\
+I) CONTENTS\
+\
+- Code: the Riemannian optimization code using non-linear CG.\
+- Auxiliary: helper routines, mostly compiled MEX files.\
+- Examples: a small example how to use the code.\
+\
+\
+II) INSTALLATION\
+\
+Run startup.m to set up MATLAB path. \
+\
+Normally--hopefully--all the MEX files are already compiled; if not you need to compile them yourself. In particular, for Mac 64 bit and Linux 64 bit, BLAS enabled MEX files are available. For other platforms, you can use the slightly slower versions after changing all calls to updateSval_blas to updateSval, and similarly for partXY_blas.\
+\
+There is a small example file in Examples on how to run the code.\
+ \
+\
+III) DISCLAIMER\
+\
+All contents written by Bart Vandereycken except\
+- files in the directories "Auxiliary" from various sources written by \
+   * Marie Michenkova and Bart Vandereycken,\
+   * "LMAFit" by Zaiwen Wen, Wotao Yin, and Yin Zhang;\
+- Armijo line search code adapted from {\field{\*\fldinst{HYPERLINK "http://www4.ncsu.edu/~ctk/matlab_darts.html"}}{\fldrslt http://www4.ncsu.edu/~ctk/matlab_darts.html}} by C. T. Kelley.\
+\
+Code written by me is GPL licensed. Please refer to the above paper when using this code for your own work :-)\
+\
+\
+}
