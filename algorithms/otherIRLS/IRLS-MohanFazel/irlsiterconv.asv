@@ -1,0 +1,133 @@
+%%%%%%%%%%%%%% IRLS FOR MATRIX COMPLETION PROBLEM %%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%% KARTHIK MOHAN %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%RMP:
+%%%%%% min rank(X)
+%%%%%% s.t. A(X)= b
+
+%%%%%%IRLS-p:
+%%%%%kth iteration, X^{k} = A*([A(A_1W)..... A(A_pW)]^(-T)b)W
+%%%%%W = (X^(k-1)^T X^(k-1) + \gamma I)^(1 - p/2)
+
+%%%%%IN THIS CODE A SIMPLIFIED IMPLEMENTATION OF IRLS IS DONE
+%%%%%SEE DOCUMENT ON IRLS FOR MATRIX COMPLETION FOR MORE DETAILS
+
+
+%%%%%MATRIX COMPLETION PROBLEM:
+%%%%% A is a sampling operator, samples some selected entries from X.
+
+clc;
+%close all;
+%PARAMETERS
+
+%n1 = 1000;
+%n1 = [500,1000,2000]'; %SIZE OF X0
+n1 = 500;
+r = 5; %Rank of X0
+ntri = 1;
+nstep = 0;
+niter = 2;
+totaltime = 0;
+thresh = 20;
+tol = 1e-3;
+q = 0; %parameter in IRLS-p
+p = 0.12; %BERNOULLI probability
+gammin = 1e-3;
+cmax = 100;
+zeta = 1.15;
+%zeta = [1.1,1.15,1.2]'; %DIFFERENT ETA PARAMETERS
+ERR = zeros(size(n1,1),1);
+relerr = zeros(niter+cmax,size(n1,1));
+M = zeros(size(n1,1),1);
+TT = zeros(size(n1,1),1);
+eta = zeta;
+% for(z = 1:size(zeta,1))
+%     eta = zeta(z,1);
+for(t = 1:size(n1,1))
+    n = n1(t,1);
+for(tri = 1:ntri)
+%Y = randn(n,r);
+Y1 = randn(n,r);
+Y2 = randn(n,r);
+X01 = Y1*Y2';
+%nX0 = norm(X01);
+X0 = X01/norm(X01);
+gam = 1e-2;
+%gam = 10; %Regularization Parameter
+%eta = 1;
+%generating SUPPORT OMEGA
+
+OM = binornd(1,p,n,n);
+[alp,beta] = find(OM==1); %vectors defining support Omega
+[betat,alpt] = find(OM' == 1);
+p1 = size(alp,1); %NUMBER OF MEASUREMNTS TAKEN ~= p*n*n
+CO = size(n,1);
+count = 0;
+
+%MEASUREMENTS
+%b = zeros(p1,1);
+B = zeros(n,n);
+for(i = 1:p1)
+    B(alp(i),beta(i)) = X0(alp(i),beta(i));
+end;
+for(i = 1:n)
+    CO(i,1)= size(find(alpt == i),1);
+end;
+D = CO(find(CO > 0));
+
+
+
+
+
+%IRLS FOR MATRIX COMPLETION PROBLEM
+%t_start = clock;
+
+
+%FIRST ITERATION OF IRLS
+m = 1;
+Xold = zeros(n,n);
+Xnew = zeros(n,n);
+Xerr = 0;
+Xnew = B;
+W = eye(n);
+L = 1; %INITIAL Lipschitz constant
+err = 1;
+
+
+tstart = clock;
+while(m<niter && err > tol)
+
+    count3 = 0;
+    Xnew = acclgradproj(W,L,Xnew,n,alpt,beta);
+    Xold = Xnew;
+       
+    W = (Xnew'*Xnew + gam*eye(n))^(0.5*q-1);
+    L = norm(W,2); 
+    err = norm(Xnew - X0,'fro')/norm(X0,'fro')
+    Xerr = norm(Xnew - Xold,'fro')/norm(Xold,'fro');
+    gam = max(gam/eta,gammin)
+    relerr(m,t) = err + relerr(m,t);
+    m = m + 1
+end;
+
+
+
+M(t,1) = M(t,1) + m;
+ERR(t,1) = ERR(t,1) + err;
+TT(t,1) = TT(t,1) + etime(clock,tstart);
+totaltime = totaltime + etime(clock,tstart);
+end;
+end;
+
+TT = TT/ntri
+M = M/ntri
+ERR = ERR/ntri
+
+%% PLOT RESULTS
+figure;
+relerr = relerr/tri;
+t = 1:1:size(relerr(:,1));
+semilogy(t',relerr);
+xlabel('#iter');
+ylabel('Relative Error');
+legend('n = 500','n=1000','n=2000');

@@ -251,6 +251,10 @@ weight_op.sing = zeros(r_c,1);
 weight_op_previous = weight_op;
 z_c = [];
 %% Start iterations
+if verbose > 0
+    fprintf(['Run MatrixIRLS with p=%.2f, data fit parameter lambda=%.2e and smoothing parameter rule "%-11s"...\n'], ...
+    p,lambda,mode_eps);
+end
 k=1;
 first_iterate = 1;
 tic
@@ -568,9 +572,9 @@ else
             increase_antisymmetricweights,U,V);
         rhs = proj_tangspace_from_Oprange(y.','MatrixCompletion',...
             U,V,meas_op.sps_plc,'tangspace',0);
-        %prec = @(z) apply_weight_vec(z,d1,d2,(ones(r_c*(d1+d2+r_c),1)+(weight_vec_c)).^(-1),...
-        %    increase_antisymmetricweights);
-        prec = @(z) z;
+        prec = @(z) apply_weight_vec(z,d1,d2,(ones(r_c*(d1+d2+r_c),1)+(weight_vec_c)).^(-1),...
+            increase_antisymmetricweights);
+%         prec = @(z) z;
         if first_iterate
             gamma_start = zeros(r_c*(d1+d2+r_c),1);
         else
@@ -623,10 +627,10 @@ sing_c   = varargin{1};
 if strcmp(mode_eps,'oracle_model_order')
     if oracle_knowledge
         r = varargin{2};
-        if p == 0
-            eps_rule = sing_c(r+1);
+        if p == 1
+            eps_rule = sing_c(r+1)/min(n.d1,n.d2);
         else
-            eps_rule = sing_c(r+1)/min(n.d1,n.d2)^p;
+            eps_rule = sing_c(r+1)/min(n.d1,n.d2)^(p/(2-p));
         end
     else
         error('This epsilon rule is only possible if oracle knowledge is available.')
