@@ -58,11 +58,13 @@ We gratefully acknowledge the authors of the following matrix completion algorit
 * `RTRMC` (Riemannian trust-region method for low-rank matrix completion [[BA15]](https://doi.org/10.1016/j.laa.2015.02.027)) by Nicholas Boumal and Pierre-Antoine Absil, available [here](http://web.math.princeton.edu/~nboumal/RTRMC/index.html). The version provided in this repository uses [Manopt 6.0](https://www.manopt.org).
 * `ScaledGD` (Scaled Gradient Descent [[TMC20]](https://arxiv.org/abs/2005.08898)) by Tian Tong, Cong Ma and Yuejie Chi. Available [here](https://github.com/Titan-Tong/ScaledGD).
 
-## Authors
-  * Christian Kümmerle
-  * Claudio M. Verdun
+## About this repository
+##### Main developer: 
+* Christian Kümmerle (<kuemmerle@jhu.edu>)
+##### Contributors:
+* Claudio M. Verdun (<claudio.verdun@tum.de>)
 
-If you have any problems or questions, please contact us for example via e-mail (kuemmerle@jhu.edu).
+If you have any problems or questions, please contact us for example via e-mail.
 
 ## References
  - [[KS18]](http://www.jmlr.org/beta/papers/v19/17-244.html) Christian Kümmerle and Juliane Sigl, [**Harmonic Mean Iteratively Reweighted Least Squares for Low-Rank Matrix Recovery**](http://www.jmlr.org/beta/papers/v19/17-244.html). _J. Mach. Learn. Res._, 19(47):1–49, 2018.

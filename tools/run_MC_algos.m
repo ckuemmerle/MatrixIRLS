@@ -44,8 +44,10 @@ if isfield(opts_custom,'p')
     if len_p >= 1
         ind=find(contains(alg_name,'HM-IRLS')+contains(alg_name,'AM-IRLS')+...
             contains(alg_name,'IRLS-col')+contains(alg_name,'IRLS-row')+...
-            strcmp(alg_name,'HM_IRLS_PCG')+strcmp(alg_name,'HM_IRLS_concave')+...
-            strcmp(alg_name,'MatrixIRLS'));
+            contains(alg_name,'HM_IRLS_PCG')+contains(alg_name,'HM_IRLS_concave')+...
+            contains(alg_name,'MatrixIRLS')+contains(alg_name,'IRLS-M')+...
+            contains(alg_name,'sIRLS-p')+contains(alg_name,'IRLS-p')+...
+            contains(alg_name,'IRucLq')+contains(alg_name,'tIRucLq'));
         for i=1:length(ind)
             ind_c=ind(i)+(i-1)*(len_p-1);
             alg_name_ind_c=cell(1,len_p);
@@ -69,8 +71,7 @@ end
 if isfield(opts_custom,'type_mean')
     len_typmean = length(opts_custom.type_mean);
     if len_typmean >= 1
-        ind=find(contains(alg_name,'HM_IRLS_PCG')+contains(alg_name,'HM_IRLS_concave')...
-            +contains(alg_name,'HM_IRLS_tangspace')+contains(alg_name,'MatrixIRLS'));
+        ind=find(contains(alg_name,'MatrixIRLS'));
         for i=1:length(ind)
             ind_c=ind(i)+(i-1)*(len_typmean-1);
             alg_name_ind_c=cell(1,len_typmean);
@@ -145,41 +146,6 @@ for l=1:nr_algos
         outs{l}.eps = eps;
         outs{l}.singval = singval;
         outs{l}.time    = time;
-        
-    elseif contains(alg_name{l},'HM_IRLS_PCG')
-        opts{l} = getDefaultOpts_IRLS;
-        opts{l}.N0_inner     = 200;
-        opts{l}.type_mean   = 'harmonic';% type_mean = 'harmonic' 
-                    %    type_mean = 'Wasserstein'
-        opts{l}.precond     = 'classical';% precond == 'none'
-                              % precond == 'classical': Use preconditioning as
-    %                         % precond == 'new':
-        opts{l} = setExtraOpts(opts{l},opts_new{l});
-        prob{l}.d1     = d1;
-        prob{l}.d2     = d2;
-        prob{l}.r      = r;
-        prob{l}.Omega  = Omega;
-        prob{l}.Phi    = Phi;
-        prob{l}.y      = y;
-        prob{l}.priorinfo      = [];
-%         opts{l}.tol_CG      = 1e-15; % Tolarance used in the stopping criterion of the inner CG method
-        opts{l}.rho         = 0;   
-        opts{l}.mode        = 'fullspace';
-        opts{l}.fast = 1;
-        if isfield(opts{l},'lambda') && ~isempty(opts{l}.lambda)
-            lambda{l}=opts{l}.lambda;
-        else
-            lambda{l}= 0;
-        end
-    %     mode_CG{i}=3; algo_fastHMIRLS{i} = 1;
-             [X_c,outs{l}.N,N_inner{l},outs{l}.eps,outs{l}.singval,outs{l}.time,...
-             resvec{l},outs{l}.U_X,outs{l}.V_X,X_innerits{l}] = ...
-        HM_IRLS_PCG(prob{l},lambda{l},opts{l});
-        for kk=1:outs{l}.N
-            Xr{l}{kk}={X_c{kk},outs{l}.U_X{kk},outs{l}.V_X{kk},Phi};
-        end
-    %   HM_IRLS_PCG(d1,d2,r,R,N0{i},N0_inner{i},pR{i},lambda{i},...
-    %   aux_indic,mode_CG{i},tol_CG,rho,algo_fastHMIRLS{i});
     elseif contains(alg_name{l},'MatrixIRLS')        
         opts{l} = getDefaultOpts_IRLS;
         opts{l} = setExtraOpts(opts{l},opts_new{l});
@@ -209,96 +175,75 @@ for l=1:nr_algos
         else
              Xr{l}{1} = X_c;
         end
-    elseif contains(alg_name{l},'HM_IRLS_concave')
+    elseif contains(alg_name{l},'sIRLS-p') || contains(alg_name{l},'IRLS-p')
+        %%% Algorithms by [Mohan & Fazel (2012)]
         opts{l} = getDefaultOpts_IRLS;
-        opts{l}.N0_inner     = 200;
-        opts{l}.type_mean   = 'min';% type_mean = 'harmonic' 
-                    %    type_mean = 'Wasserstein'
-        opts{l}.precond     = 'classical';% precond == 'none'
-                              % precond == 'classical': Use preconditioning as
-    %                         % precond == 'new':
-        opts{l} = setExtraOpts(opts{l},opts_new{l});
         prob{l}.d1     = d1;
         prob{l}.d2     = d2;
         prob{l}.r      = r;
-        prob{l}.Omega  = Omega;
         prob{l}.Phi    = Phi;
-        prob{l}.y      = y;
-        prob{l}.priorinfo      = [];
+        [rowind,colind]=find(Phi);
+        prob{l}.X0_revealed=sparse(rowind,colind,y,d1,d2);
         
-%         opts{l}.tol_CG      = 1e-15; % Tolarance used in the stopping criterion of the inner CG method
-        opts{l}.rho         = 0;   
-        opts{l}.mode        = 'tangspace'; %fullspace
-        opts{l}.fast        = 1;
-        lambda{l}=1e-8;
-    %     mode_CG{i}=3; algo_fastHMIRLS{i} = 1;
-        [X_c,outs{l}.N,outs{l}.N_inner,outs{l}.eps,outs{l}.singval,outs{l}.time,...
-             resvec{l},outs{l}.U_X,outs{l}.V_X,X_innerits{l}] = ...
-        HM_IRLS_concave(prob{l},lambda{l},opts{l});
-        for kk=1:outs{l}.N 
-            Xr{l}{kk}={X_c{kk},outs{l}.U_X{kk},outs{l}.V_X{kk},Phi};
-%             Xr{l}{kk}=X_c{kk};
+        opts{l}.gam0 = 1e-2;
+        opts{l}.gammin = 1e-10;
+        if not(isempty(r))
+            fr = r*(d1+d2-r)/length(y);
+            if(fr < 0.4)
+                opts{l}.eta = 1.1;
+                opts{l}.incr = 50;
+            else
+                opts{l}.eta = 1.03;
+                opts{l}.incr = 100;
+            end
+        else
+        	opts{l}.eta = 1.03;
+        	opts{l}.incr = 100;
         end
-        elseif contains(alg_name{l},'HM_IRLS_conc_smallsys')
-        opts{l} = getDefaultOpts_IRLS;
-        opts{l}.N0_inner     = 200;
-        opts{l}.type_mean   = 'min';% type_mean = 'harmonic' 
-                    %    type_mean = 'Wasserstein'
-        opts{l}.precond     = 'classical';% precond == 'none'
-                              % precond == 'classical': Use preconditioning as
-    %                         % precond == 'new':
         opts{l} = setExtraOpts(opts{l},opts_new{l});
+        if contains(alg_name{l},'sIRLS-p')
+            [Xr_c,outs{l}] = sirls_p_adp(prob{l},opts{l});
+        else
+            [Xr_c,outs{l}] = irls_p_adp(prob{l},opts{l});
+        end
+        if isfield(opts{l},'saveiterates') && opts{l}.saveiterates == 1
+            Xr{l} = cell(1,outs{l}.N);
+            for kk=1:outs{l}.N
+                Xr{l}{kk}=outs{l}.X{kk};
+            end
+        else
+            Xr{l} = {Xr_c};
+        end
+    elseif contains(alg_name{l},'IRucLq') || contains(alg_name{l},'tIRucLq')
+        %%% Algorithms by [M.-J. Lai, Y. Xu, W. Yin (2013)]
+        opts{l} = getDefaultOpts_IRLS;
         prob{l}.d1     = d1;
         prob{l}.d2     = d2;
         prob{l}.r      = r;
-        prob{l}.Omega  = Omega;
         prob{l}.Phi    = Phi;
-        prob{l}.y      = y;
-        prob{l}.priorinfo      = [];
-        
-%         opts{l}.tol_CG      = 1e-15; % Tolarance used in the stopping criterion of the inner CG method
-        opts{l}.rho         = 0;   
-        opts{l}.mode        = 'rangespace_smallsys';
-        opts{l}.fast        = 1;
-        lambda{l}=1e-8;
-    %     mode_CG{i}=3; algo_fastHMIRLS{i} = 1;
-             [X_c,outs{l}.N,outs{l}.N_inner,outs{l}.eps,outs{l}.singval,outs{l}.time,...
-             outs{l}.resvec,outs{l}.U_X,outs{l}.V_X,X_innerits{l}] = ...
-        HM_IRLS_concave(prob{l},lambda{l},opts{l});
-        for kk=1:outs{l}.N
-            Xr{l}{kk}={X_c{kk},outs{l}.U_X{kk},outs{l}.V_X{kk},Phi};
-        end
-    elseif contains(alg_name{l},'HM_IRLS_tangspace')
-        opts{l} = getDefaultOpts_IRLS;
-        opts{l}.N0_inner     = 200;
-        opts{l}.type_mean   = 'min';% type_mean = 'harmonic' 
-                    %    type_mean = 'Wasserstein'
-        opts{l}.precond     = 'classical';% precond == 'none'
-                              % precond == 'classical': Use preconditioning as
-    %                         % precond == 'new':
+        [rowind,colind]=find(Phi);
+        prob{l}.X0_revealed=sparse(rowind,colind,y,d1,d2);
+        opts{l}.gamma = 0.9;
+        opts{l}.gamma0 = 0.9;
         opts{l} = setExtraOpts(opts{l},opts_new{l});
-        prob{l}.d1     = d1;
-        prob{l}.d2     = d2;
-%         prob{l}.r      = r; 
-        prob{l}.r      = opts{l}.R; % Change this back to r = r !
-        prob{l}.Omega  = Omega;
-        prob{l}.Phi    = Phi;
-        prob{l}.y      = y;
-        prob{l}.priorinfo      = [];
-        
-%         opts{l}.tol_CG      = 1e-15; % Tolarance used in the stopping criterion of the inner CG method
-        opts{l}.rho         = 0;   
-        opts{l}.mode        = 'tangspace';
-        opts{l}.fast        = 1;
-        lambda{l}=1e5;
-    %     mode_CG{i}=3; algo_fastHMIRLS{i} = 1;
-             [X_c,outs{l}.N,outs{l}.N_inner,outs{l}.eps,outs{l}.singval,outs{l}.time,...
-             outs{l}.resvec,outs{l}.U_X,outs{l}.V_X,X_innerits{l}] = ...
-        HM_IRLS_concave(prob{l},lambda{l},opts{l});
-        for kk=1:outs{l}.N
-            Xr{l}{kk}={X_c{kk},outs{l}.U_X{kk},outs{l}.V_X{kk},Phi};
+        if opts{l}.lambda == 0
+            lambda_c = 1e-6.*norm(y);
+        else
+            lambda_c = opts{l}.lambda;
         end
-        
+        if contains(alg_name{l},'tIRucLq')
+            [Xr_c,outs{l}] = tIRucLq_m_adp(prob{l},lambda_c,opts{l});
+        else
+            [Xr_c,outs{l}] = IRucLq_m_adp(prob{l},lambda_c,opts{l});
+        end
+        if isfield(opts{l},'saveiterates') && opts{l}.saveiterates == 1
+            Xr{l} = cell(1,outs{l}.N);
+            for kk=1:outs{l}.N
+                Xr{l}{kk}=outs{l}.X{kk};
+            end
+        else
+            Xr{l} = {Xr_c};
+        end
     elseif strcmp(alg_name{l},'LMaFit')
         opts{l}.tol=1.25e-10;
         opts{l}.print=0;
@@ -348,7 +293,6 @@ for l=1:nr_algos
             end
         else
             Xr{l}=outs{l}.Xout;
-%             Xr{l}{1}{2}=outs{l}.V;
         end
     elseif strcmp(alg_name{l},'ScaledGD')
         opts{l} = setExtraOpts(opts{l},opts_new{l});
@@ -457,22 +401,6 @@ for l=1:nr_algos
             Xr_c = Xr{l};
             Xr{l} = {Xr_c};
         end
-    elseif strcmp(alg_name{l},'GenASD')
-        [rowind,colind]=find(Phi);
-        X0_revealed=sparse(rowind,colind,y,d1,d2);
-        opts{l} = setExtraOpts(opts{l},opts_new{l});
-        opts{l}.p_GenASD = 0.2;
-        opts{l}.beta = 1e-3;
-        %opts{l}.mu = 0.01;
-        opts{l}.gamma=0.1000;%norm(y)/sqrt(2*opts{l}.p_GenASD*r);
-        opts{l}.exact = 1;
-        opts{l}.r = r;
-        Phi_vec=sparse(1:length(rowind), sub2ind([d1,d2], rowind,colind), ...
-            ones(length(rowind), 1), length(rowind), d1*d2);
-        opts{l}.obj=@(U,V) sum(1- opts{l}.gamma./(opts{l}.gamma+eig([U;V]'*[U;V])))...
-            +(0.001/2)*norm(Phi_vec*vec(sparse_multiply(U,V, rowind, colind,d1,d2))-y)^2;
-        [outs{l}.U,outs{l}.V ,outs{l}.obj,outs{l}.time] = GenASD(X0_revealed,opts{l});
-        Xr{l}={{outs{l}.U, outs{l}.V}};
     elseif strcmp(alg_name{l},'RTRMC')
         opts{l} = setExtraOpts(opts{l},opts_new{l});
         opts{l}.method = 'rtr';     % 'cg' or 'rtr', to choose the optimization algorithm
