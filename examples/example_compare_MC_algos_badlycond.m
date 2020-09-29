@@ -62,7 +62,7 @@ else
 end
 
 %% Choose algorithms for matrix completion
-alg_names={'MatrixIRLS','R2RILS','RTRMC','LRGeomCG',...
+alg_names={'MatrixIRLS','R3MC','R3MC-rankupd','R2RILS','RTRMC','LRGeomCG',...
     'LMaFit','ScaledASD','ScaledGD','NIHT'};
 
 %%% Set optional algorithmic parameters

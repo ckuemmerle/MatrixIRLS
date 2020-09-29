@@ -444,6 +444,41 @@ for l=1:nr_algos
         else
             Xr{l}={{Uc,Wc.'}};
         end
+    elseif contains(alg_name{l},'R3MC')
+        opts{l} = default_opts_R3MC;
+        opts{l} = setExtraOpts(opts{l},opts_new{l});
+        opts{l}.tol = 1e-8.*opts{l}.tol;
+        [rowind,colind]=find(Phi);
+        prob{l}.d1     = d1;
+        prob{l}.d2     = d2;
+        prob{l}.r      = r;
+        prob{l}.Phi    = Phi;
+        if iscell(y) && opts{l}.recsys
+            error('This needs to be adapted to R3MC (recsys mode).')
+            prob{l}.y       =y{1};
+            prob{l}.test    =y{2};
+            prob{l}.train   =y{3};
+            prob{l}.centscale = y{4};
+        else
+            prob{l}.y      = y;
+        end
+        prob{l}.data_ls.rows = rowind;
+        prob{l}.data_ls.cols = colind;
+        prob{l}.data_ls.entries = prob{l}.y;
+        prob{l}.data_ls.nentries = length(prob{l}.y);
+        if opts{l}.rank_updates == true || strcmp(alg_name{l},'R3MC-rankupd')
+            opts{l}.rank_updates = true;
+            alg_name{l} = 'R3MC-rankupd';
+            [model{l}, outs{l}] = R3MC_rone_updates(prob{l},opts{l});
+        else
+            prob{l} = initialize_R3MC(prob{l},opts{l}.random_initialization);
+            [model{l}, outs{l}] = R3MC_adp(prob{l}, opts{l});
+        end
+        if isfield(opts{l},'saveiterates') && opts{l}.saveiterates == 1
+            Xr{l} = outs{l}.X;
+        else
+            Xr{l} = {model{l}.U*model{l}.R,model{l}.V};
+        end
     end
     outs{l}.opts=opts{l};
 end
