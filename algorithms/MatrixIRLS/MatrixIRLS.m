@@ -366,8 +366,7 @@ while k <= N0
         if strcmp(objective,'pluseps_squared')
             sing_all=weight_op.sing;
         else
-            X_c_full = get_full_mat(X_c,weight_op_previous.U,...
-                weight_op_previous.V,meas_op.sps_plc);
+            X_c_full = get_densemat_from_iterate(X_c,meas_op.sps_plc);
             [~,singval_mat_c,~]=svd(X_c_full);
             sing_all = diag(singval_mat_c);
         end
