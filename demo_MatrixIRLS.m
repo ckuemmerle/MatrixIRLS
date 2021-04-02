@@ -16,6 +16,7 @@
 % Author: Christian Kuemmerle, 2020.
 %% Set parameters
 % Number of rows of the matrix that defines the problem:
+rng('shuffle');
 d1 = 1000; 
 % Number of columns:
 d2 = 1000; 
@@ -30,7 +31,7 @@ oversampling = 2;
 % Number of measurements:
 m = floor(min(oversampling*df_LR_val,d1*d2));
 %% Sample the measurement matrix Phi (revealed entries correspond to non-zero entries) 
-[Phi,Omega] = sample_phi_MatrixCompletion(d1,d2,m,'resample',r,1000);
+[Phi,Omega] = sample_phi_MatrixCompletion(d1,d2,m,'resample',r,50);
 %% Sample the ground truth matrix X0 and measured entries y
 modeX0      = 2;
 [U0,V0] = sample_X0_lowrank(d1,d2,r,modeX0,0);
@@ -44,9 +45,11 @@ opts.p = 0; % (non-)convexity parameters p for IRLS
 % p = 0: sum of log objective
 % 0 < p < 1: Schatten-p quasi-norm.
 % p = 1: Nuclear norm.
+opts.N0_inner = 200;
 opts.saveiterates = 1;
 opts.verbose = 1;
-opts.tol = 1e-8;
+opts.tol = 1e-12;
+opts.tangent_para = 'extrinsic';
 %% Run MatrixIRLS
 prob.d1     = d1;
 prob.d2     = d2;

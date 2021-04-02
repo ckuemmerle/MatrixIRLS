@@ -1,11 +1,14 @@
 function visualize_errorcurves_combined(error_fro_rel,alg_name,varargin)
-% visualize_errorcurves_combined(M,N,error_fro_rel,alg_name);
 
-if nargin > 2
+if nargin == 3
    problem = 'RobustPCA';
    nr_outliers = varargin{1};
+elseif nargin > 3
+   problem = [];
+   titlestring = varargin{2};
 else
    problem = [];
+   titlestring = 'Relative error vs. iteration count';
 end
 
 warning('off','MATLAB:HandleGraphics:ObsoletedProperty:JavaFrame')
@@ -54,18 +57,18 @@ if strcmp(problem,'RobustPCA')
     title('Nr. of outliers vs. iterations')
         set(gcf,'name','Algorithmic comparisons for Robust PCA') 
 else
-    subplot(1,2,1)
-    for l=1:nr_algos
-        plot(error_fro_rel{l},markers{l},'MarkerSize',8);
-        hold on
-    end
-    xlabel('iterations');
-    ylabel('Relative Frobenius error');
-    set(gca,'xtick',0:floor(maxIt./15):maxIt,'xticklabel',0:floor(maxIt./15):maxIt);
-    legend(alg_name,'FontSize',12); %,'Interpreter','LaTeX'
-    title('Relative error vs. iteration count')
+%     subplot(1,2,1)
+%     for l=1:nr_algos
+%         plot(error_fro_rel{l},markers{l},'MarkerSize',8);
+%         hold on
+%     end
+%     xlabel('iterations');
+%     ylabel('Relative Frobenius error');
+%     set(gca,'xtick',0:floor(maxIt./15):maxIt,'xticklabel',0:floor(maxIt./15):maxIt);
+%     legend(alg_name,'FontSize',12); %,'Interpreter','LaTeX'
+%     title('Relative error vs. iteration count')
 
-    subplot(1,2,2)
+%     subplot(1,2,2)
     for l=1:nr_algos
        semilogy(error_fro_rel{l},markers{l},'MarkerSize',8); %
        hold on
@@ -74,9 +77,12 @@ else
     ylabel('Relative Frobenius error (log-scale)');
     set(gca,'xtick',0:floor(maxIt./15):maxIt,'xticklabel',0:floor(maxIt./15):maxIt);
     legend(alg_name,'FontSize',12,'Interpreter','TeX'); %,'Interpreter','LaTeX'
-    title('Relative error vs. iteration count')
-    set(gcf,'name','Rel. error vs. iterations') 
+    title(titlestring)
+    set(gcf,'name',titlestring) 
 end
         
 end
 
+% function plot_logaplot
+% 
+% end

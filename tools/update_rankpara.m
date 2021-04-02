@@ -1,4 +1,5 @@
-function [r_c,sing,U_X,V_X]=update_rankpara(XXX,sing,U_X,V_X,eps,R,r_c,tracking)
+function [r_c,sing,U_X,V_X]=update_rankpara(XXX,sing,U_X,V_X,eps,R,r_c,...
+    N_SVD,tracking)
 %update_rankpara This functions determines how many singular values
 %are larger than eps, and updates the rank r_c accordingly. It further
 %outputs the first r_c singular values (sing) and first r_c singular vectors
@@ -9,8 +10,9 @@ function [r_c,sing,U_X,V_X]=update_rankpara(XXX,sing,U_X,V_X,eps,R,r_c,tracking)
 %                 R = maximal number of singular values to be computed.
 %               r_c = Number of singular values of last iterate larger than
 %                     the eps of last iterate.
-%                     
-tol_precision = 1e-10;
+%             N_SVD = Max. number of iterations for bksvd
+%
+tol_precision = 1e-10; % precision parameter
 
 d1=size(U_X,1);
 d2=size(V_X,1);
@@ -24,7 +26,7 @@ while not(r_correct)
     else
         r_SVD = min(2*r_SVD,R);
         if ~tracking
-            [U_X, singval_mat_c, V_X]=bksvd_mod(XXX, min(d,r_SVD+1), 20);
+            [U_X, singval_mat_c, V_X]=bksvd_mod(XXX, min(d,r_SVD+1), N_SVD);
             sing = diag(singval_mat_c);
         end
         if length(find(sing>eps+tol_precision)) <= r_SVD
@@ -41,7 +43,7 @@ while not(r_correct)
     end
 end
 if r_c == 0
-    sing = [];%eps;
+    sing = [];
     U_X = zeros(d1,r_c);
     V_X = zeros(d2,r_c);
 else

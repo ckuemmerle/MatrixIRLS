@@ -63,7 +63,7 @@ end
 
 %% Choose algorithms for matrix completion
 alg_names={'MatrixIRLS','R3MC','R3MC-rankupd','R2RILS','RTRMC','LRGeomCG',...
-    'LMaFit','ScaledASD','ScaledGD','NIHT'};
+    'LRGeomCG_pursuit','LMaFit','ScaledASD','ScaledGD','NIHT'};
 
 %%% Set optional algorithmic parameters
 opts_custom.tol = 1e-10;        % tolerance for stopping criterion
@@ -72,8 +72,8 @@ opts_custom.N0 = 400;           % Max. number of (outer) iterations for
                                 % MatrixIRLS, R2RILS and RTRMC.
 opts_custom.N0_firstorder = 1000; % Max. number of iterations for 'first-order algorithms'.
 %%% Optional parameters addressing options of 'second-order algorithms'.
-opts_custom.tol_CG_fac=1e-5*cond_nr^(-1);    % tolerance for stopping criterion of inner iterations
-opts_custom.N0_inner = 500;     % Max. number of (inner) iterations for 'second-order algorithms'
+opts_custom.tol_CG_fac=1e-5;%*cond_nr^(-1);    % tolerance for stopping criterion of inner iterations
+opts_custom.N0_inner = 40;     % Max. number of (inner) iterations for 'second-order algorithms'
 
 
 %%% Optional parameters addressing only options for IRLS

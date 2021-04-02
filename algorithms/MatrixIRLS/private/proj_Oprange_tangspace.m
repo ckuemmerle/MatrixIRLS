@@ -18,6 +18,23 @@ if strcmp(problem,'MatrixCompletion')
     d2      =size(V,1);
     D=max(d1,d2);
     m=length(rowind);
+
+    %%% Standard version for representations without U_{T_c} etc.:
+    % Z2 = reshape(gam((R^2+1):(R*(d2+R))),[R,d2]);
+    % Z3 = reshape(gam((R*(d2+R)+1):(R*(d2+d1+R))),[d1,R]);
+    % if isreal(gam)
+    %     gam_Omega = partXY((U*reshape(gam(1:R^2),[R,R])).',V',rowind,colind,m)';
+    %     gam_Omega = gam_Omega+partXY(U.',Z2,rowind,colind,m)';
+    %     gam_Omega = gam_Omega+partXY((Z3).',V',rowind,colind,m)';
+    % else
+    %     gam_Omega = partXY_cmplx((U*reshape(gam(1:R^2),[R,R])).',V',rowind,colind,m)';
+    %     gam_Omega = gam_Omega+partXY_cmplx(U.',Z2,rowind,colind,m)';
+    %     gam_Omega = gam_Omega+partXY_cmplx((Z3).',V',rowind,colind,m)';
+    % end
+    %%% Version where a (R x R) block is set 0 -> problem later on:
+    % Z2 = [zeros(R,R),reshape(gam((R^2+1):(R*(d2))),[R,d2-R])];
+    % Z3 = [zeros(R,R);reshape(gam((R*d2+1):(R*(d2+d1-R))),[d1-R,R])];
+    %%% Version without 0 setting, but still representation with U_{T_c}:
     switch mode
         case 'rangespace_smallsys'
             M2 = reshape(gam((R^2+1):(R*(d2+R))),[R,d2]);
@@ -37,12 +54,10 @@ if strcmp(problem,'MatrixCompletion')
                 y = y+partXY_cmplx((M3-U*UZ3).',V',rowind,colind,m)';
             end
         case 'tangspace'
-    %     X1= reshape(gam(1:R^2),[R,R]);
-    %     X2= reshape(gam((R^2+1):(R*(d1+R))),[d1,R]);
-    %     X3= reshape(gam((R*(d2+R)+1):(R*(d2+d1+R))),[R,d2]);
-            M1=reshape(gam(1:R^2),[R,R]);
-            M2=reshape(gam((R^2+1):(R*(d1+R))),[d1,R]);
-            M3=reshape(gam((R*(d1+R)+1):(R*(d2+d1+R))),[R,d2]);
+            [M1,M2,M3] = get_Tk_matrices(gam,d1,d2,R);
+%             M1=reshape(gam(1:R^2),[R,R]);
+%             M2=reshape(gam((R^2+1):(R*(d1+R))),[d1,R]);
+%             M3=reshape(gam((R*(d1+R)+1):(R*(d2+d1+R))),[R,d2]);
             if increase_antisymmetricweights
                 M1S_u = triu(M1);
                 M1S_l = triu(M1,1)';
@@ -77,6 +92,25 @@ if strcmp(problem,'MatrixCompletion')
                 y = y+partXY_cmplx(U.',M3,rowind,colind,m)';
             end
     end
+    
+elseif strcmp(problem,'PhaseRetrieval')
+    U       = varargin{1};
+    A       = varargin{2};
+    AU      = varargin{3};
+    [~,R] = size(AU);
+    n   = size(U,1);
+%   X1= reshape(gam(1:R^2),[R,R]);
+%   X2= related to reshape(gam((R^2+1):end),[n,R]);
+    handle_A=functions(A);
+    if contains(handle_A.function,'fourierMeasurementOperator')
+        Aop= @(X) cell2mat(cellfun(A,num2cell(X,1),'UniformOutput',false));
+        tmp=Aop(reshape(conj(gam((R^2+1):end)),[n,R]));
+    else
+        tmp=A(reshape(conj(gam((R^2+1):end)),[n,R]));
+    end
+    y = sum((AU*reshape(gam(1:R^2),[R,R])).*conj(AU),2);
+    y = y + sqrt(2).*real(sum(AU.*tmp,2));
+%     y = y + sqrt(2).*real(sum(AU.*(Aop(reshape(conj(gam((R^2+1):end)),[n,R]))),2));
 else
     error('proj_Oprange_tangspace.m not yet implemented for this problem.')
 end

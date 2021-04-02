@@ -4,19 +4,21 @@ function [Xr,outs] = ...
 %
 % Implements the algorithm Matrix Iteratively Reweighted Least Squares
 % (MatrixIRLS) for optimizing a smoothed log-det/Schatten-p objective with
-% updated smoothing, as described in the paper
-% [1] C. Kuemmerle, C. M. Verdun, "Escaping Saddle Points in 
+% updated smoothing, as described in the papers
+% [1] C. Kuemmerle, C. Mayrink Verdun, "Escaping Saddle Points in 
 % Ill-Conditioned Matrix Completion with a Scalable Second Order Method", 
 % ICML 2020 Workshop "Beyond First Order Methods in ML Systems".
-%
+% [2] C. Kuemmerle, C. Mayrink Verdun, "A Scalable Second Order Method 
+% for Ill-Conditioned Matrix Completion from Few Samples", under revision.
+
 % See also: Chapter 2 of 
-% [2] C. Kuemmerle, "Understanding and Enhancing Data Recovery Algorithms From
+% [3] C. Kuemmerle, "Understanding and Enhancing Data Recovery Algorithms From
 % Noise-Blind Sparse Recovery to Reweighted Methods for Low-Rank Matrix 
 % Optimization", Ph.D. dissertation, Technical University of Munich,
 % https://mediatum.ub.tum.de/doc/1521436/1521436.pdf.
 %
 % In fact, this implementation corresponds to the very algorithm of the
-% paper [1] if the second input parameter fulfills lambda == 0. For lambda
+% papers [1-2] if the second input parameter fulfills lambda == 0. For lambda
 % > 0, it implements a variant of MatrixIRLS that does not involves an exact
 % data constraint, but rather the optimization of the unconstrained objective
 %       F_{\epsilon}(X) + \frac{1}{2 \lambda} \|P_{\Omega}(X)-y\|_2^2.  (1)
@@ -47,27 +49,25 @@ function [Xr,outs] = ...
 %       - N0        int. Max. number of (outer) IRLS iterations 
 %                   (default 200). 
 %       - N0_inner  int. Max. number of inner iteration in the conjugate
-%                   gradient method (default 200).
+%                   gradient method (default 50).
 %       - tol       double. Stopping criterion, lower bound for relative 
 %                   change of Frobenius norm (default 1e-9).
-%       - tol_CG_fac  double. Factor that determines the stopping criterion 
-%                   if the conjugate gradient method, such that
-%                   tol_CG_fac*eps_c is a lower bound on the relative
-%                   residual (eps_c is the current smoothing parameter 
-%                   epsilon). (default 1e-5).
+%       - tol_CG    double. Determines the tolerance for stopping criterion
+%                   of the conjugate gradient method (bound on the relative
+%                   residual norm). (default 1e-5).
 %       - epsmin    Minimal value for regularization parameter epsilon
-%                   (default 1e-16).
+%                   (default 1e-15).
 %       - mode_eps   character string. Choice of rule to update the
 %                    regularization parameter epsilon (default
 %                    'oracle_model_order').
 %                   = 'oracle_model_order': Uses knowledge about the
-%                      model order/rank "r", epsilon choice as in [1],[2].
+%                      model order/rank "r", epsilon choice as in [1-3].
 %                   = 'auto_decay': eps that is automatically
 %                      superlinearly decaying. First value eps0 of epsilon 
 %                      is based on the Frobenius norm of first iterate
 %                      X^{(l)}, choose eps at iteration l such that:
 %                      eps(l) = eps0.*(tol_outer/eps0)^(((l-1)/(N0-1))^(2-p));
-%                   = 'iter_diff': epsilon choice rule similar [3], 
+%                   = 'iter_diff': epsilon choice rule similar to [4], 
 %                      based on the norm of the difference of two conse-
 %                      cutive iterates.
 %       - use_min   Boolean (default 1).
@@ -82,7 +82,7 @@ function [Xr,outs] = ...
 %                   is misspecified or if a non-oracle choice of the 
 %                   smoothing parameter epsilon is chosen.
 %       - type_mean   character string, determines type of weight operator
-%                   underlying the IRLS method, see [2].
+%                   underlying the IRLS method, see [3].
 %                   = 'optimal': Corresponds to the optimal weight
 %                      operator: Geometric mean of p = 0, and
 %                      (p/(p-2))-power mean for Schatten-p objective.
@@ -94,20 +94,20 @@ function [Xr,outs] = ...
 %                   = 'qmean': q-power mean.
 %       - qmean_para  double. Only relevant if type_mean=='qmean', 
 %                      determines the value of "q" in the q-power mean,
-%                      cf. [2].
+%                      cf. [3].
 %       - increase_antisymmetricweights
 %                   Boolean (default = 0). Can be set to 1, but that is
 %                   only interesting for theoretical reasons.
 %                   = 1: In the definition of the weight operator, this 
 %                      means that the weights on the "antisymmetric part" 
-%                      are increased as in [2]. 
+%                      are increased as in [3]. 
 %                   = 0: Weight operator without artificially increased
 %                      antisymmettic port.
 %       - objective character string, decides precise form of objective
 %                       function to be optimized by IRLS.
 %                   = 'objective_thesis': log(max(sigma,eps))+0.5.*
 %                       (min(sigma,eps)^2/eps^2-1).
-%                       (as used in [1], [2])
+%                       (as used in [1-3])
 %                   = 'pluseps': Corresponds to objective
 %                       of the type:
 %                       log(max(sigma,eps)+eps)+0.25.*(min(sigma,eps)^2/eps^2-1)
@@ -131,7 +131,27 @@ function [Xr,outs] = ...
 %                   = 1: Output all intermediate iterates.
 %       - mode_linsolve  character string, describes linear system to be solved.
 %                   = 'tangspace': Linear system based on tangent space,
-%                   see Appendix of [1] or Section 2.6.2. of [2].
+%                   see Appendix of [1-2] or Section 2.6.2. of [3].
+%       - tangent_para character string, decides what kind of computational 
+%                   representation of the tangent space is used, cf. also
+%                   [4]. Default: 'extrinsic'.
+%                   = 'intrinsic': Uses an intrinsic representation of 
+%                      elements of the tangent space (which uses 
+%                      r_k*(d1+d2-r_k) parameters). This is used to obtain 
+%                      to have a 1-to-1 correspondence with the implemen-
+%                      tation detailed in Appendix A of [2], which is
+%                      needed to obtain make the well-conditioning result
+%                      of Theorem 4.2 of [2] applicable.
+%                   = 'extrinsic': Uses an extrinsic representation of 
+%                      elements of the tangent space (which uses 
+%                      r_k*(d1+d2+r_k) parameters). Compared to the imple-
+%                      mentation detailed in Appendix A of [2], this does 
+%                      not use Step 6 in Algorithm 3 nor Step 1 of
+%                      Algorithm 4 in [2]. This can be used as a default,
+%                      as in practice, we typically observed little 
+%                      performance gain compared to the intrinsic
+%                      representation, and since the extrinsic one is 
+%                      conceptually simpler.
 % Returns
 % ----------
 % Xr:   struct. Contains the last iterate in space-efficient form, see
@@ -158,21 +178,25 @@ function [Xr,outs] = ...
 %                   each iteration.
 %       - r_greatereps (1 x N) vector. Current active ranks 'r_k' for each
 %                   iteration, such that r_k = |\{i \in [d]:
-%                   \sigma_i(X^{(k)}) > \epsilon_k\}|, cf. [1], [2].
+%                   \sigma_i(X^{(k)}) > \epsilon_k\}|, cf. [1-3].
 %       - time      (1 x N) vector. Cumulative timestamps at each
 %                   iteration.
 % =========================================================================
-% Further reference (for 'mode_eps'):
-% [3] S. Voronin, I. Daubechies, "An iteratively reweighted least squares
-% algorithm for sparse regularization", arXiv:1511.08970v3.
+% Further references:
+% [4] S. Voronin, I. Daubechies, "An iteratively reweighted least squares
+% algorithm for sparse regularization", arXiv:1511.08970v3. (for 'mode_eps')
+% [5] W. Huang, P.-A. Absil, K. A. Gallivan, "Intrinsic representation of 
+% tangent vectors and vector transports on matrix manifolds", Numerische 
+% Mathematik, 136(2): 523–543, 2017. (for 'tangent_para')
 % =========================================================================
 % Author: Christian Kuemmerle, Johns Hopkins University, kuemmerle@jhu.edu,
-% 2019-2020.
+% 2019-2021.
 % =========================================================================
 %% Obtain algorithmic options
-[r_upper,N0,N0_inner,p,tol_CG_fac,tol_outer,objective,...
+[r_upper,N0,N0_inner,N_SVD,p,tol_CG,tol_outer,objective,...
     type_mean,qmean_para,mode_linsolve,mode_eps,epsmin,use_min,...
-    increase_antisymmetricweights,tracking,verbose,recsys,saveiterates]=...
+    increase_antisymmetricweights,tracking,verbose,recsys,saveiterates,...
+    tangent_para]=...
     get_options(opts);
 %% Obtain problem information
 [n,meas_op,y]=get_problem_parameters(prob);
@@ -241,13 +265,13 @@ end
 %% Initialization
 weight_op.U = eye(n.d1,r_c);
 weight_op.V = eye(n.d2,r_c);
+weight_op.sing = zeros(r_c,1);
 weight_op.p = p;
 eps_c=1;
-[weight_op.Wl_inv,weight_op.Wl_inv_eps] = set_weight_infovec(zeros(r_c,1),...
+[weight_op.Wl_inv,weight_op.Wl_inv_eps] = set_weight_infovec(weight_op.sing,...
     eps_c,p,objective);
 eps_c = Inf;
 weight_op.eps = eps_c;
-weight_op.sing = zeros(r_c,1);
 weight_op_previous = weight_op;
 z_c = [];
 %% Start iterations
@@ -260,7 +284,7 @@ first_iterate = 1;
 tic
 while k <= N0
     %% Calculate the solution of the minimization problem
-    if mod(k,25) == 0 
+    if mod(k,25) == 0 && verbose > 0
         disp(['Begin Iteration ',num2str(k),'...']);
     end
     eps_previous = eps_c;
@@ -279,17 +303,13 @@ while k <= N0
     %% Update the iterate: Determine X^{(k)}
     [X_c,X_Tn_c,z_c,N_inner_c,resvec_c,relres_c]=update_iterate(weight_op,...
         meas_op,n,y,X_prev_newbase,z_c,...
-        lambda,tol_outer,tol_CG_fac,mode_linsolve,increase_antisymmetricweights,...
+        lambda,tol_outer,tol_CG,mode_linsolve,increase_antisymmetricweights,...
         first_iterate,N0_inner,...
-        type_mean,qmean_para,verbose,objective,X_c_previous.res_range.');
+        type_mean,qmean_para,tangent_para,objective,...
+        X_c_previous.res_range.');
     %% Calculate norm difference of consecutive iterates for stopping criterion (and epsilon rule)
-    diff_c  = get_frob_diff_compact(X_c,X_c_previous,meas_op.sps_plc);
-    if diff_c < 1e-7 % In this case, the outcome of get_frob_error is not very reliable, therefore compute it again
-        Xc_full = get_densemat_from_compact(X_c,meas_op.sps_plc);
-        Xc_prev_full = get_densemat_from_compact(X_c_previous,...
-            meas_op.sps_plc);
-        diff_c = norm(Xc_full-Xc_prev_full,'fro');
-    end     
+    diff_c  = compute_iterate_diff_norm(X_c,X_c_previous,meas_op.sps_plc,'proxy');
+%     end     
     rel_chg = diff_c/norm_frob_compact(X_c,meas_op.sps_plc);
     if not(first_iterate)
         if rel_chg < tol_outer
@@ -311,10 +331,10 @@ while k <= N0
     else
         if oracle_knowledge
             [weight_op.U, sing_c, weight_op.V]=bksvd_mod(X_c_handle,...
-                min(d,max(r_c,r+1)), 20);
+                min(d,max(r_c,r+1)), N_SVD);
         else
             [weight_op.U, sing_c, weight_op.V]=bksvd_mod(X_c_handle,...
-                min(d,r_c), 20);
+                min(d,r_c), N_SVD);
         end
     end
     weight_op.sing=diag(sing_c);
@@ -341,7 +361,7 @@ while k <= N0
     if not(strcmp(objective,'pluseps_squared'))
         [r_c,weight_op.sing,weight_op.U,weight_op.V] = update_rankpara(X_c_handle,...
             weight_op.sing,weight_op.U,weight_op.V,...
-            eps_c,r_upper,r_c,0);
+            eps_c,r_upper,r_c,N_SVD,0);
     end
     %%% Calculate quotient quot_r_c between smallest singular value larger 
     %%% than \epsilon_k and \epsilon_k
@@ -404,10 +424,10 @@ while k <= N0
         end
         training_flag = 1;
         prediction_train_val_c = get_prediction_RecSys_IRLS(X_c,...
-           prob.train.rowind, prob.train.colind, prob.centscale, clip_ratingscale,training_flag); %prob.train.data
+           prob.train.rowind, prob.train.colind, prob.centscale, clip_ratingscale,training_flag); 
         training_flag = 0;
         prediction_test_val_c = get_prediction_RecSys_IRLS(X_c,...
-           prob.test.rowind, prob.test.colind, prob.centscale, clip_ratingscale,training_flag); %prob.test.data
+           prob.test.rowind, prob.test.colind, prob.centscale, clip_ratingscale,training_flag);
         if verbose > 0
             prediction.train.val{k} = prediction_train_val_c;
             prediction.test.val{k} = prediction_test_val_c;
@@ -501,9 +521,9 @@ end
 function [X_c,X_Tn_c,z_c,N_inner_c,resvec_c,relres_c] = update_iterate(weight_op,...
         meas_op,n,y,...
         x_prev_newbase,z_start,...
-        lambda,tol_outer,tol_CG_fac,mode_linsolve,increase_antisymmetricweights,...
+        lambda,tol_outer,tol_CG,mode_linsolve,increase_antisymmetricweights,...
         first_iterate,N0_inner,...
-        type_mean,qmean_para,verbose,varargin)
+        type_mean,qmean_para,tangent_para,varargin)
 
 U = weight_op.U;
 V = weight_op.V;
@@ -517,14 +537,24 @@ Wl_inv      = weight_op.Wl_inv;
 Wl_inv_eps  = weight_op.Wl_inv_eps;
 eps_c       = weight_op.eps;
 
+if strcmp(tangent_para,'intrinsic')
+    xU.U=U;
+    QU = QRmatrices(xU);
+    xV.U=V;
+    QV = QRmatrices(xV);
+    dim_tangent = r_c*(d1+d2-r_c);
+else
+    dim_tangent = r_c*(d1+d2+r_c) ;
+end
+
 %%% Update tolerance parameter of the conjugate gradient method.
-tol_CG=max(max(min(eps_c.*tol_CG_fac,1e-2)),1e-15);
+tol_CG=max(tol_CG,1e-16);
 
 %%% Load additional variables
 if increase_antisymmetricweights
     sing = weight_op.sing;
     p    = weight_op.p;
-    if nargin >= 15
+    if nargin >= 17
         objective = varargin{1};
         X_c4 = varargin{2};
     else
@@ -555,53 +585,44 @@ else
         end
         PTPhstarPhPTstar_handle = @(gam) PTPhstarPhPTstar_tangspace(gam,U,...
             V,meas_op.sps_plc,meas_op.rowind,meas_op.colind,0);
-        if first_iterate
-             H{1}=lambda.*H{1};
-             dH{1}=lambda.*dH{1}(1:r_c);
-             dH{2}=lambda.*dH{2}(1:r_c);
-        else
-            H{1}=((Wl_inv_eps+lambda)/Wl_inv_eps).*H{1}./(1-H{1});
-            dH{1}=((Wl_inv_eps+lambda)/Wl_inv_eps).*dH{1}(1:r_c)./(1-dH{1}(1:r_c));
-            dH{2}=((Wl_inv_eps+lambda)/Wl_inv_eps).*dH{2}(1:r_c)./(1-dH{2}(1:r_c));
-        end
-        weight_vec_c = get_weight_vec(d1,d2,H,dH,increase_antisymmetricweights);
+        H{1}=((Wl_inv_eps+lambda)/Wl_inv_eps).*H{1}./(1-H{1});
+        dH{1}=((Wl_inv_eps+lambda)/Wl_inv_eps).*dH{1}(1:r_c)./(1-dH{1}(1:r_c));
+        dH{2}=((Wl_inv_eps+lambda)/Wl_inv_eps).*dH{2}(1:r_c)./(1-dH{2}(1:r_c));
+        weight_vec_c = get_weight_vec(d1,d2,H,dH,tangent_para,increase_antisymmetricweights);
         %%% Define function handle M(gam) = PTPhstarPhPTstar_handle(gam) +  (weight_vec_c.*gam);
-        M = @(gam) PTPhstarPhPTstar_handle(gam) + ...
+        if strcmp(tangent_para,'intrinsic')
+            M = @(gam) E2D_rankmanifold(PTPhstarPhPTstar_handle(D2E_rankmanifold(gam,QU,QV)),QU,QV) + ...
             apply_weight_vec(gam,d1,d2,weight_vec_c,...
             increase_antisymmetricweights,U,V);
+        else
+            M = @(gam) PTPhstarPhPTstar_handle(gam) + ...
+            apply_weight_vec(gam,d1,d2,weight_vec_c,...
+            increase_antisymmetricweights,U,V);
+        end
         rhs = proj_tangspace_from_Oprange(y.','MatrixCompletion',...
             U,V,meas_op.sps_plc,'tangspace',0);
-        prec = @(z) apply_weight_vec(z,d1,d2,(ones(r_c*(d1+d2+r_c),1)+(weight_vec_c)).^(-1),...
+        if strcmp(tangent_para,'intrinsic')
+            rhs = E2D_rankmanifold(rhs,QU,QV);
+        end
+        prec = @(z) apply_weight_vec(z,d1,d2,(ones(dim_tangent,1)+(weight_vec_c)).^(-1),...
             increase_antisymmetricweights);
-%         prec = @(z) z;
-        if first_iterate
-            gamma_start = zeros(r_c*(d1+d2+r_c),1);
-        else
-            gamma_start = apply_weight_vec(x_prev_newbase,d1,d2,...
-                (((Wl_inv_eps+lambda)/Wl_inv_eps)^(-1).*weight_vec_c+ones(r_c*(r_c+d1+d2),1)).^(-1),...
-                increase_antisymmetricweights,U,V);
+        if strcmp(tangent_para,'intrinsic')
+            x_prev_newbase = E2D_rankmanifold(x_prev_newbase,QU,QV);
         end
-        [gamma,~,relres_c,N_inner_c,resvec_c] = pcg_1(M,rhs,tol_CG,N0_inner,prec,[],gamma_start);
-        if first_iterate
-            X_Tn_c= gamma;
-        else
-            X_Tn_c= apply_weight_vec(gamma,d1,d2,...
-                (Wl_inv_eps.*weight_vec_c)./(Wl_inv_eps+lambda)+ones(r_c*(r_c+d1+d2),1),...
-                increase_antisymmetricweights,U,V);
+        gamma_start =  x_prev_newbase;
+        rhs_explained = M(gamma_start);
+%         [gamma,~,relres_c,N_inner_c,resvec_c] = pcg_1(M,rhs-rhs_explained,tol_CG,N0_inner,prec,[],gamma_start);
+        [gamma_delta,~,relres_c,N_inner_c,resvec_c] = pcg_1(M,rhs-rhs_explained,tol_CG,N0_inner,prec,[]);
+        gamma = gamma_start+gamma_delta;
+        X_Tn_c= gamma;
+        if strcmp(tangent_para,'intrinsic')
+            X_Tn_c = D2E_rankmanifold(X_Tn_c,QU,QV);
         end
-        res_c =y.'-proj_Oprange_tangspace(gamma,'MatrixCompletion',...
-            U,V,meas_op.rowind,meas_op.colind,'tangspace',0);%increase_antisymmetricweights);
-        if first_iterate
-            X_Tn_c_delta=Wl_inv_eps.*proj_tangspace_from_Oprange(res_c,'MatrixCompletion',...
-                U,V,meas_op.sps_plc,'tangspace',0)...;%increase_antisymmetricweights)...
-                ./lambda; 
-        else
-            X_Tn_c_delta=Wl_inv_eps.*proj_tangspace_from_Oprange(res_c,'MatrixCompletion',...
-                U,V,meas_op.sps_plc,'tangspace',0)...;%increase_antisymmetricweights)...
-                ./(Wl_inv_eps+lambda); 
-        end
-        X_Tn_c=X_Tn_c-X_Tn_c_delta;
-
+%         X_Tn_c= apply_weight_vec(gamma,d1,d2,...
+%             (Wl_inv_eps.*weight_vec_c)./(Wl_inv_eps+lambda)+ones(r_c*(r_c+d1+d2),1),...
+%             increase_antisymmetricweights,U,V);
+        res_c =y.'-proj_Oprange_tangspace(X_Tn_c,'MatrixCompletion',...
+            U,V,meas_op.rowind,meas_op.colind,'tangspace',0);
         [X_Tn_c_1,X_Tn_c_2,X_Tn_c_3] = get_Tk_matrices(X_Tn_c,d1,d2,r_c);
         X_c.Gam1 = X_Tn_c_1;
         X_c.Gam2 = X_Tn_c_3;
@@ -689,9 +710,10 @@ end
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [r_upper,N0,N0_inner,p,tol_CG_fac,tol_outer,objective,...
+function [r_upper,N0,N0_inner,N_SVD,p,tol_CG,tol_outer,objective,...
     type_mean,qmean_para,mode_linsolve,mode_eps,epsmin,use_min,...
-    increase_antisymmetricweights,tracking,verbose,recsys,saveiterates]=...
+    increase_antisymmetricweights,tracking,verbose,recsys,saveiterates,...
+    tangent_para]=...
     get_options(opts)
 
 if isfield(opts,'R')
@@ -703,10 +725,11 @@ end
 
 N0     = opts.N0;       % Maximal number of iterations for the IRLS algorithm
 N0_inner=opts.N0_inner; % Maximal number of inner iterations (e.g. in the CG method)
+N_SVD  = opts.N_SVD;    % max. number of iterations for power method-type solver for partial SVD (such as bksvd)
 p      = opts.p;        % Parameter describing the non-convexity of the objective function
                         % (p = 0 for logarithmic objective, 0 < p < 1 for
                         % Schatten-p quasi-norm objective)
-tol_CG_fac    = opts.tol_CG_fac;   % Tolarance used in the stopping criterion of the inner CG method
+tol_CG    = opts.tol_CG;   % Tolarance used in the stopping criterion of the inner CG method
 tol_outer = opts.tol;      % Tolerance used as stopping criterion of outer IRLS iterations
                         % (min. change of relative Frobenius norm)
 if not(isfield(opts,'objective')) || isempty(opts.objective)
@@ -792,6 +815,12 @@ verbose     = opts.verbose; % verbose = 0: No output except of last iterate
                             % verbose = 2: Return also many further
                             % parameters
 
+if isfield(opts,'tangent_para') &&  ~isempty(opts.tangent_para)
+    tangent_para = opts.tangent_para;
+else
+    tangent_para = 'extrinsic';
+end
+                            
 end
 
 function  [n,meas_op,Yval]=get_problem_parameters(prob)

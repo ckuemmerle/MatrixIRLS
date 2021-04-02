@@ -28,7 +28,7 @@ function err_fro = get_frob_diff_compact(M,N,sps_plc)%(M,U0,V0,N,U,V,sps_plc)
 %
 % =========================================================================
 % Author: Christian Kuemmerle, 2019-2020.
-err_fro = norm_frob_compact(M,sps_plc)^2;
+% err_fro = norm_frob_compact(M,sps_plc)^2;
 
 UU=M.U'*N.U;
 VV=N.V'*M.V;
@@ -44,8 +44,9 @@ N2V=N.Gam2*M.V;
 M3U=M.Gam3'*N.U;
 N3U=N.Gam3'*M.U;
 
-sc_prod=trace(M.Gam1'*UU*N.Gam1*VV);
-sc_prod=sc_prod+trace((N.Gam1*M2V')*UU)+trace((M.Gam1'*UU)*N2V); %% Potential speed up here? If only the diagonal elements of the outer matrix products are calculated?
+lrge_part = norm_frob_compact(M,sps_plc)^2+norm_frob_compact(N,sps_plc)^2 - 2*real(trace(M.Gam1'*UU*N.Gam1*VV));
+% sc_prod=trace(M.Gam1'*UU*N.Gam1*VV);
+sc_prod=trace((N.Gam1*M2V')*UU)+trace((M.Gam1'*UU)*N2V); %% Potential speed up here? If only the diagonal elements of the outer matrix products are calculated?
 sc_prod=sc_prod+trace((M.Gam1'*N3U')*VV)+trace((M3U*N.Gam1)*VV);
 sc_prod=sc_prod+trace((N.Gam2*M.Gam2')*UU);
 sc_prod=sc_prod+trace(N.Gam2*M4U)+trace(N4U*M.Gam2');
@@ -54,8 +55,8 @@ sc_prod=sc_prod+trace((M.Gam3'*N.Gam3)*VV);
 sc_prod=sc_prod+trace(M.Gam1'*(M.U'*N4V))+trace((M4V'*N.U)*N.Gam1);
 sc_prod=sc_prod+trace(M3U*N2V)+trace(M2V'*N3U');
 sc_prod=sc_prod+N.res_range*M.res_range';
-err_fro = err_fro - 2*real(sc_prod);
-err_fro = err_fro + norm_frob_compact(N,sps_plc)^2;
+err_fro = lrge_part - 2*real(sc_prod);
+% err_fro = err_fro + norm_frob_compact(N,sps_plc)^2;
 
 err_fro = sqrt(abs(err_fro));
 

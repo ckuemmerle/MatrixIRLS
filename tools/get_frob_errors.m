@@ -104,7 +104,7 @@ if isstruct(Xr_c)
             error_fro =   sqrt(error_fro);
         end
 elseif iscell(Xr_c)
-    if size(Xr_c,2) == 2
+    if size(Xr_c,2) == 2 || size(Xr_c,1) == 2
         U=Xr_c{1};
         V=Xr_c{2};
         

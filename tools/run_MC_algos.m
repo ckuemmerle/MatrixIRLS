@@ -26,7 +26,7 @@ function [Xr,outs,alg_name] = run_MC_algos(Phi,y,r,alg_name,opts_custom)
 %       of used algorithms, including reflecting potentially additional 
 %       parameter choices (and thus, might differ from input 'alg_name').
 % =========================================================================
-% Author: Christian Kuemmerle, 2018-2020.
+% Author: Christian Kuemmerle, 2018-2021.
 
 [d1,d2]=size(Phi);
 Omega = find(Phi);
@@ -270,8 +270,7 @@ for l=1:nr_algos
             Xr{l}{1}={Out.Xhist,Out.Yhist'};
         end
        
-   elseif strcmp(alg_name{l},'LRGeomCG')
-       opts{l} = setExtraOpts(opts{l},opts_new{l});
+   elseif contains(alg_name{l},'LRGeomCG')
         if iscell(y) && opts{l}.recsys
             prob{l} = make_prob_Riem_adp(y{1},Omega,d1,d2,r);
             prob{l}.test    =y{2};
@@ -279,20 +278,33 @@ for l=1:nr_algos
         else
             prob{l} = make_prob_Riem_adp(y,Omega,d1,d2,r);
         end
-        start = make_start_x_Riem(prob{l});
-        opts{l} = setExtraOpts(opts{l},opts_new{l});
-        opts{l} = default_opts_Riem(opts{l}.N0_firstorder,opts{l}.tol);
-        opts{l} = setExtraOpts(opts{l},opts_new{l});
-        opts{l}.N0 = opts{l}.N0_firstorder;
-        [~,~,~,outs{l},N,tm_c] = LRGeomCG_outp(prob{l},opts{l},start);
-        outs{l}.N=N;
-        outs{l}.time=tm_c;
-        if isfield(opts{l},'saveiterates') && opts{l}.saveiterates == 1
-            for kk=1:outs{l}.N
-                Xr{l}{kk}={outs{l}.Xout{kk}{1},outs{l}.Xout{kk}{2}};
-            end
+        if contains(alg_name{l},'LRGeomCG_pursuit')
+            opts{l} = default_opts_pursuit();
+            opts{l}.increase_with_residual = true;
+            opts{l}.strong_wolfe = false;
+            opts{l}.rank_increase = 1; % choose 1 or 2
+            opts{l}.rel_grad_decrease_factor = 1e-5; 
+            opts{l}.max_rank = r+2;
+            opts{l} = setExtraOpts(opts{l},opts_new{l});
+            opts{l}.N0 = opts{l}.N0_firstorder;
+            [~,~,~,Xr{l},outs{l}] = LRGeomCG_pursuit(prob{l}, opts{l});
         else
-            Xr{l}=outs{l}.Xout;
+            opts{l} = setExtraOpts(opts{l},opts_new{l});
+            opts{l} = default_opts_Riem(opts{l}.N0_firstorder,opts{l}.tol);
+            opts{l} = setExtraOpts(opts{l},opts_new{l});
+
+            start = make_start_x_Riem(prob{l});
+            opts{l}.N0 = opts{l}.N0_firstorder;
+            [~,~,~,outs{l},N,tm_c] = LRGeomCG_outp(prob{l},opts{l},start);
+            outs{l}.time=tm_c;
+            outs{l}.N=N;
+            if isfield(opts{l},'saveiterates') && opts{l}.saveiterates == 1
+                for kk=1:outs{l}.N
+                    Xr{l}{kk}={outs{l}.Xout{kk}{1},outs{l}.Xout{kk}{2}};
+                end
+            else
+                Xr{l}=outs{l}.Xout;
+            end
         end
     elseif strcmp(alg_name{l},'ScaledGD')
         opts{l} = setExtraOpts(opts{l},opts_new{l});
@@ -350,29 +362,18 @@ for l=1:nr_algos
         [Xr{l},outs{l}.N,~] = NNM_DouglasRachford(d1,d2,Omega,y,opts{l}.N0);
         alg_name{l}='NNM';
         outs{l}.time=toc;
-    elseif strcmp(alg_name{l},'NIHT')
+    elseif (any(strcmp(["NIHT", "ASD","ScaledASD"], alg_name{l})))
         opts{l} = setExtraOpts(opts{l},opts_new{l});
         start=make_start_x_IHT_ASD(alg_name{l},d1,d2,r,Omega,y);
-%         opts{i} = default_opts();
         opts{l}= opts_adapted(opts{l}.N0_firstorder,opts{l}.tol,opts{l}.tol,...
             opts{l}.verbose,opts{l}.saveiterates);
-        [Xr{l},outs{l}] = NIHT_Matrix_outp(d1,d2,r,Omega,y,start,opts{l});
-        outs{l}.N=outs{l}.iter; 
-    elseif strcmp(alg_name{l},'ASD')
-        opts{l} = setExtraOpts(opts{l},opts_new{l});
-        start = make_start_x_IHT_ASD(alg_name{l},d1,d2,r,Omega,y);
-%         opts{l} = default_opts();
-        opts{l} = opts_adapted(opts{l}.N0_firstorder,opts{l}.tol,opts{l}.tol,...
-            opts{l}.verbose,opts{l}.saveiterates);
-        [Xr{l},outs{l}] = ASD_outp(d1,d2,r,Omega,y,start,opts{l});
-        outs{l}.N=outs{l}.iter;
-    elseif strcmp(alg_name{l},'ScaledASD')
-        opts{l} = setExtraOpts(opts{l},opts_new{l});
-        start = make_start_x_IHT_ASD(alg_name{l},d1,d2,r,Omega,y);
-%         opts{l} = default_opts();
-        opts{l}= opts_adapted(opts{l}.N0_firstorder,opts{l}.tol,opts{l}.tol,...
-            opts{l}.verbose,opts{l}.saveiterates);
-        [Xr{l},outs{l}] = ScaledASD_outp(d1,d2,r,Omega,y,start,opts{l});
+        if strcmp(alg_name{l},'NIHT')
+            [Xr{l},outs{l}] = NIHT_Matrix_outp(d1,d2,r,Omega,y,start,opts{l});
+        elseif strcmp(alg_name{l},'ASD')
+            [Xr{l},outs{l}] = ASD_outp(d1,d2,r,Omega,y,start,opts{l});
+        elseif strcmp(alg_name{l},'ScaledASD')
+            [Xr{l},outs{l}] = ScaledASD_outp(d1,d2,r,Omega,y,start,opts{l});
+        end
         outs{l}.N=outs{l}.iter; 
     elseif strcmp(alg_name{l},'OptSpace')
         [rowind,colind]=find(Phi);

@@ -27,9 +27,9 @@
 rng('shuffle')
 %% Set parameters
 % Number of rows of the matrix that defines the problem:
-d1 = 100; 
+d1 = 150; 
 % Number of columns:
-d2 = 100; 
+d2 = 150; 
 % Rank:
 r = 5;
 % Number of degrees of freedom of the setting:

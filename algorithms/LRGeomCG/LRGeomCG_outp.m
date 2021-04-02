@@ -34,7 +34,9 @@ function [x,histout,fail,Xout,itc,time] = LRGeomCG(prob, opts, x0)
 % - save intermediate iterates if opts.saveiterates == 1.
 % - save timing information.
 
-opts.verbosity = opts.verbose;
+if isfield(opts,'verbose')
+    opts.verbosity = opts.verbose;
+end
 %beta_type = 'F-R';
 beta_type = 'P-R';
 

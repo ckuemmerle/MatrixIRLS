@@ -25,6 +25,7 @@ prob.temp_omega = sparse(prob.Omega_i, prob.Omega_j, ...
 % regularization parameter
 %prob.mu = 1e-14;
 prob.mu = 0;
+prob.has_testing = false;
 
 
 
