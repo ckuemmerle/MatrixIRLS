@@ -71,8 +71,10 @@ erPhi_fro_rel = cell(nr_algos,length(parameters.(para_names{1})),...
                     instancesize);
 erPhic_fro_rel = cell(nr_algos,length(parameters.(para_names{1})),...
     instancesize);
-err_tail_rel = cell(nr_algos,length(parameters.(para_names{1})),...
-    instancesize);
+
+err_tail_rel = [];
+% err_tail_rel = cell(nr_algos,length(parameters.(para_names{1})),...
+%     instancesize);
 times = cell(nr_algos,length(parameters.(para_names{1})),...
     instancesize);
 
@@ -127,8 +129,8 @@ for j=1:length(parameters.(para_names{1}))
             error_fro_rel_c =get_frob_errors(Xr_c,X0,Phi,alg_names,'full',verbose);
             erPhi_fro_rel_c =get_frob_errors(Xr_c,X0,Phi,alg_names,'Phi',verbose);
             erPhic_fro_rel_c =get_frob_errors(Xr_c,X0,Phi,alg_names,'Phi_comp',verbose);
-            error_tail_rel_c =get_tail_frob_errors(Xr_c,X0,Phi,alg_names,...
-                k_tail,'full',verbose);
+%             error_tail_rel_c =get_tail_frob_errors(Xr_c,X0,Phi,alg_names,...
+%                 k_tail,'full',verbose);
             times_c = cell(nr_algos,1);
             for k=1:nr_algos
                 if isempty(outs_c{k}.time)
@@ -140,7 +142,7 @@ for j=1:length(parameters.(para_names{1}))
             err_fro_rel(:,j,i) = error_fro_rel_c(:);
             erPhi_fro_rel(:,j,i) = erPhi_fro_rel_c(:);
             erPhic_fro_rel(:,j,i) = erPhic_fro_rel_c(:);
-            err_tail_rel(:,j,i) = error_tail_rel_c(:);
+%             err_tail_rel(:,j,i) = error_tail_rel_c(:);
             times(:,j,i) = times_c(:);
         end
     end

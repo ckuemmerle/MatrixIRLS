@@ -288,6 +288,11 @@ for l=1:nr_algos
             opts{l} = setExtraOpts(opts{l},opts_new{l});
             opts{l}.N0 = opts{l}.N0_firstorder;
             [~,~,~,Xr{l},outs{l}] = LRGeomCG_pursuit(prob{l}, opts{l});
+            if isfield(opts{l},'saveiterates') && opts{l}.saveiterates == 1
+                
+            else
+                Xr{l} = {Xr{l}{end}};
+            end
         else
             opts{l} = setExtraOpts(opts{l},opts_new{l});
             opts{l} = default_opts_Riem(opts{l}.N0_firstorder,opts{l}.tol);
@@ -478,7 +483,7 @@ for l=1:nr_algos
         if isfield(opts{l},'saveiterates') && opts{l}.saveiterates == 1
             Xr{l} = outs{l}.X;
         else
-            Xr{l} = {model{l}.U*model{l}.R,model{l}.V};
+            Xr{l} = {{model{l}.U*model{l}.R,model{l}.V}};
         end
     end
     outs{l}.opts=opts{l};

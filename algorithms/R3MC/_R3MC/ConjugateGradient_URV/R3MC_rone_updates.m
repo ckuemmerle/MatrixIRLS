@@ -26,7 +26,9 @@ for r_c = start_rank:rank_steps:max_rank
     [prob.U0_init, prob.R0_init, prob.V0_init]...
         = svd_rank_1_update(model_c.U, model_c.R,...
         model_c.V, -sig*u, v);
-    outs_c.X = outs_c.X.';
+    if isfield(params,'saveiterates') && params.saveiterates
+        outs_c.X = outs_c.X.';
+    end
     if r_c == start_rank
         outs = outs_c;
     else

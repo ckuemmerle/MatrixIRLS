@@ -383,9 +383,11 @@ function [model, infos] = R3MC_adp(prob,params)%(data_ts, data_ls, model, params
     infos.iter_time = cumsum(myitertime);
     if saveiterates
         infos.X = X(1:N);
-        infos.time = infos.iter_time(1:N);
-        infos.N = N;
+    else
+        infos.X = {model.U*model.R,model.V};
     end
+    infos.time = infos.iter_time(1:N);
+    infos.N = N;
 end
 
 

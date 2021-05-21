@@ -48,16 +48,16 @@ end
 %% Postprocessing
 success_threshold = 1e-3;
 successrate = get_successrate(err_fro_rel,success_threshold);
-successrate_tail = get_successrate(err_tail_rel,success_threshold);
+% successrate_tail = get_successrate(err_tail_rel,success_threshold);
 
 av_err_fro_rel     = average_errors(err_fro_rel);
 av_erPhi_fro_rel   = average_errors(erPhi_fro_rel);
 av_erPhic_fro_rel  = average_errors(erPhic_fro_rel);
-av_err_tail_rel    = average_errors(err_tail_rel);
+% av_err_tail_rel    = average_errors(err_tail_rel);
 failurerate=1-successrate;
-failurerate_tail=1-successrate_tail;
+% failurerate_tail=1-successrate_tail;
 median_err_rel = get_median_errors(err_fro_rel);
-median_err_rel_tail = get_median_errors(err_tail_rel);
+% median_err_rel_tail = get_median_errors(err_tail_rel);
 
 filename = strcat(filename,filename_extension);
 save(fullfile('results',strcat(filename,'.mat')))
@@ -66,19 +66,19 @@ plot_MC_v1(failurerate,parameters,alg_names,'1d',[],problem,...
     ['Failure rate w/ threshold ',num2str(success_threshold)]);
 savefig(fullfile('results',strcat(filename,'_failurerate.fig')));
 print(fullfile('results',strcat(filename,'_failurerate.eps')),'-depsc');
-plot_MC_v1(failurerate_tail,parameters,alg_names,'1d',[],problem,...
-    ['Failure rate (tail) w/ threshold ',num2str(success_threshold)]);
-savefig(fullfile('results',strcat(filename,'_failurerate_tail.fig')));
-print(fullfile('results',strcat(filename,'_failurerate_tail.eps')),'-depsc')
+% plot_MC_v1(failurerate_tail,parameters,alg_names,'1d',[],problem,...
+%     ['Failure rate (tail) w/ threshold ',num2str(success_threshold)]);
+% savefig(fullfile('results',strcat(filename,'_failurerate_tail.fig')));
+% print(fullfile('results',strcat(filename,'_failurerate_tail.eps')),'-depsc')
 plot_MC_v1(median_err_rel,parameters,alg_names,'logy',[],problem,...
     ['Median of relative Frobenius errors']);
 savefig(fullfile('results',strcat(filename,'_medianerr.fig')));
 print(fullfile('results',strcat(filename,'_medianerr.eps')),'-depsc');
 
-plot_MC_v1(median_err_rel_tail,parameters,alg_names,'logy',[],problem,...
-    ['Median of relative tail Frobenius errors']);
-savefig(fullfile('results',strcat(filename,'_medianerrtail.fig')));
-print(fullfile('results',strcat(filename,'_medianerrtail.eps')),'-depsc');
+% plot_MC_v1(median_err_rel_tail,parameters,alg_names,'logy',[],problem,...
+%     ['Median of relative tail Frobenius errors']);
+% savefig(fullfile('results',strcat(filename,'_medianerrtail.fig')));
+% print(fullfile('results',strcat(filename,'_medianerrtail.eps')),'-depsc');
 disp('Figures saved successfully!')
 end
 
