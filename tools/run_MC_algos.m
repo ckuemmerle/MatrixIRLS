@@ -286,7 +286,7 @@ for l=1:nr_algos
             opts{l}.rel_grad_decrease_factor = 1e-5; 
             opts{l}.max_rank = r+2;
             opts{l} = setExtraOpts(opts{l},opts_new{l});
-            opts{l}.N0 = opts{l}.N0_firstorder;
+            opts{l}.maxit = opts{l}.N0_firstorder;
             [~,~,~,Xr{l},outs{l}] = LRGeomCG_pursuit(prob{l}, opts{l});
             if isfield(opts{l},'saveiterates') && opts{l}.saveiterates == 1
                 
