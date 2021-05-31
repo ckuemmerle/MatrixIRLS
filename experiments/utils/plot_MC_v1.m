@@ -30,7 +30,7 @@ if isempty(colors)
     colors{20}='d-.m';  
 end
  figure('Name',['Success rates for and varying values of ',para1]);
-    MaximizeFigureWindow();  
+%     MaximizeFigureWindow();  
 for i=1:nr_algos
 if strcmp(option,'logy')
     semilogy(values1,value_mat(i,:),'LineStyle',lines{i},'LineWidth',5);
