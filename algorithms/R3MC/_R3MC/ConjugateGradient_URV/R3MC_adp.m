@@ -48,7 +48,7 @@ function [model, infos] = R3MC_adp(prob,params)%(data_ts, data_ls, model, params
     if ~isfield(params,'max_step'); params.max_step = 100; end  % Maximum step size during line-search
     if ~isfield(params,'sigma_armijo'); params.sigma_armijo = 0.5; end % Parameter of the Armijo step
     if ~isfield(params,'ls_maxiter'); params.ls_maxiter = 10; end % Maximum number of line-search steps
-    if ~isfield(params,'N0'); params.N0 = 500; end % Maximum number of iterations
+    if ~isfield(params,'N0_firstorder'); params.N0_firstorder = 500; end % Maximum number of iterations
     if ~isfield(params,'linearized_linesearch'); params.linearized_linesearch = true; end % Exact linesearch or adapative
     if ~isfield(params,'compute_predictions'); params.compute_predictions = true; end % Compute test error
     if ~isfield(params,'orth_value'); params.orth_value = Inf; end % Measure orthogonality while computing conjugate direction
@@ -58,7 +58,7 @@ function [model, infos] = R3MC_adp(prob,params)%(data_ts, data_ls, model, params
     % User defined options
     tol = params.tol;
     verbose = params.verbose;
-    N0 = params.N0;
+    N0 = params.N0_firstorder;
     max_step = params.max_step;
     ls_maxiter = params.ls_maxiter;
     gamma = params.gamma;
