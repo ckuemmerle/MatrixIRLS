@@ -103,14 +103,14 @@ for j=1:length(parameters.(para_names{1}))
         max_nr_resample = 1000;
         modeX0 = problem.modeX0;
         complexflag = 0;
-%         if strcmp(modeX0,'condition_control_1/x2') || strcmp(modeX0,'condition_control_linear') ...
-%             || strcmp(modeX0,'condition_control_log')
-%             cond_nr = problem.cond_nr;
+        if strcmp(modeX0,'condition_control_1/x2') || strcmp(modeX0,'condition_control_linear') ...
+            || strcmp(modeX0,'condition_control_log')
+            cond_nr = problem.cond_nr;
 %             alg_opts.tol_CG_fac = alg_opts.tol_CG_fac./cond_nr;
-%         else
-%             cond_nr  = [];
+        else
+            cond_nr  = [];
 %             alg_opts.tol_CG_fac = alg_opts.tol_CG_fac;
-%         end
+        end
         parfor i=1:instancesize
             if strcmp(modeX0,'condition_control_1/x2') || strcmp(modeX0,'condition_control_linear') ...
                 || strcmp(modeX0,'condition_control_log')
