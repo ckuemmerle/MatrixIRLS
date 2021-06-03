@@ -43,7 +43,7 @@ colorscheme = [0.00000 0.44700 0.74100
                    0.30100 0.74500 0.93300
                    0.63500 0.07800 0.18400%ScaledGD
                    0.08000 0.39200 0.25100
-                   0.00000 0.44700 0.74100
+                   0.00000 0.00000 0.00000
                    0.85000 0.32500 0.09800
                    0.92900 0.69400 0.12500
                    0.49400 0.18400 0.55600];%
@@ -53,11 +53,23 @@ nr_algos = length(alg_names);
 %         successrate_matrix = zeros(1,length(values1),nr_algos);
 ax = gca;
 for l=1:nr_algos
-    if isfield(custom_options,'ColorOrderIndices')
-        ax.Children(nr_algos+1-l).Color = colorscheme(l,:);
-    end
-    if isfield(custom_options,'markerssize')
-        ax.Children(nr_algos+1-l).MarkerSize = custom_options.markerssize{l};
+    if strcmp(class(ax.Children),'matlab.graphics.chart.primitive.Scatter')
+        if isfield(custom_options,'ColorOrderIndices')
+            ax.Children(nr_algos+1-l).CData = colorscheme(ColorOrderIndices(l),:);
+        end
+        if isfield(custom_options,'markers')
+            ax.Children(nr_algos+1-l).Marker = markers{l};
+        end
+        if isfield(custom_options,'markerssize')
+            ax.Children(nr_algos+1-l).SizeData = custom_options.markerssize{l};
+        end
+    else
+        if isfield(custom_options,'ColorOrderIndices')
+            ax.Children(nr_algos+1-l).Color = colorscheme(ColorOrderIndices(l),:);
+        end
+        if isfield(custom_options,'markerssize')
+            ax.Children(nr_algos+1-l).MarkerSize = custom_options.markerssize{l};
+        end
     end
 end
 %     titlestr=['d1=',num2str(problem.d1),', d2=',num2str(problem.d1),...

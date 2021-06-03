@@ -2,5 +2,5 @@
 
 addpath(genpath('algorithms'));
 addpath(genpath('examples'));
-addpath(genpath('ICML2020'));
+addpath(genpath('experiments'));
 addpath(genpath('tools'))

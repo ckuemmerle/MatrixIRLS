@@ -1,7 +1,7 @@
 % Example script that compares the iteratively reweighted least squares
-% algorithms 'MatrixIRLS' of [1] with algorithms 'IRLS-p' and 'sIRLS-p' of
-% the paper [2, Mohan and Fazel 2012], and the with the algorithm
-% 'tIRucLq'/'IRucLq' of the paper [3, Lai, Xu and Yin 2013], for both the
+% algorithms 'MatrixIRLS' of [1,2] with algorithms 'IRLS-p' and 'sIRLS-p' of
+% the paper [3, Mohan and Fazel 2012], and the with the algorithm
+% 'tIRucLq'/'IRucLq' of the paper [4, Lai, Xu and Yin 2013], for both the
 % non-convexity parameters q (resp. p) = 0 and = 0.5.
 %
 % For a description of the random model on the sampled entries, see
@@ -10,7 +10,7 @@
 % "sample_X0_lowrank.m".
 %
 % If add_noise == 0, no noise is added to the measurements. As the
-% algorithms of [3] are designed to solve an unconstrained problem with
+% algorithms of [4] are designed to solve an unconstrained problem with
 % objective (case q > 0)
 % J(X,epsilon) := (1/q).*\sum_{i=1}^{d_1} (\sigma_i^2(X)+epsilon^2)^(q/2) +
 %                  1/(2*lambda).*\|P_{\Omega}(X)-y\|_2^2,
@@ -20,15 +20,18 @@
 % Author: Christian Kuemmerle, 2020.
 % =========================================================================
 % References:
-% [1] C. Kuemmerle and C. M. Verdun, "Escaping Saddle Points in 
+% [1] C. Kuemmerle, C. Mayrink Verdun, "A Scalable Second Order Method for 
+% Ill-Conditioned Matrix Completion from Few Samples", ICML 2021.
+%
+% [2] C. Kuemmerle, C. Mayrink Verdun, "Escaping Saddle Points in 
 % Ill-Conditioned Matrix Completion with a Scalable Second Order Method", 
 % ICML 2020 Workshop "Beyond First Order Methods in ML Systems".
 %
-% [2] Karthik Mohan and Maryam Fazel, "Iterative reweighted algorithms for 
+% [3] Karthik Mohan and Maryam Fazel, "Iterative reweighted algorithms for 
 % matrix rank minimization", Journal of Machine Learning Research, 
 % 13(1):3441-3473, 2012.
 %
-% [3]  Ming-Jun Lai, Yangyang Xu and Wotao Yin, "Improved iteratively 
+% [4]  Ming-Jun Lai, Yangyang Xu and Wotao Yin, "Improved iteratively 
 % reweighted least squares for unconstrained smoothed \ell_q minimization",
 % SIAM Journal on Numerical Analysis 51(2):927-957, 2013.
 % =========================================================================

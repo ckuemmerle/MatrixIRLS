@@ -24,7 +24,7 @@ function [X_hat, outs, observed_RMSE] = R2RILS(X,omega,r,opts)
 % r = target rank of reconstructed matrix
 % opts = struct with algorithmic parameters. Field may include:
 %       - N0_inner: Max. nr. of iterations
-%       - tol_CG_fac: Tolerance for stopping condition of iterative linear
+%       - tol_CG: Tolerance for stopping condition of iterative linear
 %       system solver (LSQR)
 %       - tol: Tolerance for stopping condition of outer iterations
 %
@@ -32,7 +32,7 @@ verbose = opts.verbose;
 
 %eps_early_stop = 1e-15;  choice by authors
 eps_early_stop = opts.tol;
-tol_inner      = 1e-1*opts.tol_CG_fac;
+tol_inner      = 1e-1*opts.tol_CG;
 if isfield(opts,'N0_inner')
     N0_inner = opts.N0_inner;
 else

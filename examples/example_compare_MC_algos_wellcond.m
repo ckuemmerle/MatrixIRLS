@@ -18,7 +18,7 @@
 % https://github.com/ckuemmerle/MatrixIRLS
 % and the function 'run_MC_algos.m'.
 % =========================================================================
-% Author: Christian Kuemmerle, 2018-2020.
+% Author: Christian Kuemmerle, 2018-2021.
 
 rng('shuffle')
 %% Set parameters

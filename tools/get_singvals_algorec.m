@@ -33,28 +33,10 @@ for l=1:nr_algos
 end
 singsX0 = get_singvals(X0,sps_plc,r);
 
-if plotflag
+if plotflag == 1
     figure;hold on
     for l=1:nr_algos
-        s = scatter(1:r,log10(sings{l}(1:r)),40);%,'LineWidth',5);
-%         s.LineWidth = 5;
-        hold on;
-    end
-    scatter(1:r,log10(singsX0(1:r)),100,'x');%,'x','LineWidth',10
-    xlabel('Index of singular value');
-    ylabel('Log. of value of singular value');
-    if nargin >= 7
-        alg_names = varargin{1};
-        legend(alg_names,'FontSize',12,'Interpreter','TeX');
-    end
-%     legend(alg_name,'FontSize',12,'Interpreter','TeX'); %,'Interpreter','LaTeX'
-    title('First singular values of reconstuctions')
-    set(gcf,'name','First singular values of reconstuctions') 
-        
-    figure;hold on
-    for l=1:nr_algos
-        scatter(1:r,log10(abs(sings{l}(1:r)-singsX0(1:r))./singsX0(1:r)),40);%,'LineWidth',5);
-%         s.LineWidth = 5;
+        scatter(1:r,abs(sings{l}(1:r)-singsX0(1:r))./singsX0(1:r),40);
         hold on;
     end
     xlabel('Index of singular value');
@@ -66,6 +48,23 @@ if plotflag
 %     legend(alg_name,'FontSize',12,'Interpreter','TeX'); %,'Interpreter','LaTeX'
     title('Rel. errors to singular value of X0')
     set(gcf,'name','Rel. errors to singular value of X0') 
+elseif plotflag == 2
+    figure;hold on
+    for l=1:nr_algos
+        s = scatter(1:r,sings{l}(1:r),40);%,'LineWidth',5);
+    %         s.LineWidth = 5;
+        hold on;
+    end
+    scatter(1:r,singsX0(1:r),100,'x');%,'x','LineWidth',10
+    xlabel('Index of singular value');
+    ylabel('Log. of value of singular value');
+    if nargin >= 7
+        alg_names = varargin{1};
+        legend(alg_names,'FontSize',12,'Interpreter','TeX');
+    end
+    %     legend(alg_name,'FontSize',12,'Interpreter','TeX'); %,'Interpreter','LaTeX'
+    title('First singular values of reconstuctions')
+    set(gcf,'name','First singular values of reconstuctions')  
 end
 
 end

@@ -26,6 +26,10 @@ function [Xr,outs,alg_name] = run_MC_algos(Phi,y,r,alg_name,opts_custom)
 %       of used algorithms, including reflecting potentially additional 
 %       parameter choices (and thus, might differ from input 'alg_name').
 % =========================================================================
+% References:
+% [1] C. Kuemmerle, C. Mayrink Verdun, "A Scalable Second Order Method for 
+% Ill-Conditioned Matrix Completion from Few Samples", ICML 2021.
+% =========================================================================
 % Author: Christian Kuemmerle, 2018-2021.
 
 [d1,d2]=size(Phi);
@@ -286,7 +290,9 @@ for l=1:nr_algos
             opts{l}.rel_grad_decrease_factor = 1e-5; 
             opts{l}.max_rank = r+2;
             opts{l} = setExtraOpts(opts{l},opts_new{l});
-            opts{l}.maxit = opts{l}.N0_firstorder;
+            if isfield(opts{l},'N0_firstorder')
+                opts{l}.maxit = opts{l}.N0_firstorder;
+            end
             [~,~,~,Xr{l},outs{l}] = LRGeomCG_pursuit(prob{l}, opts{l});
             if isfield(opts{l},'saveiterates') && opts{l}.saveiterates == 1
                 
@@ -295,11 +301,13 @@ for l=1:nr_algos
             end
         else
             opts{l} = setExtraOpts(opts{l},opts_new{l});
+            if ~isfield(opts{l},'N0_firstorder')
+                opts{l}.N0_firstorder = 5000;
+            end
             opts{l} = default_opts_Riem(opts{l}.N0_firstorder,opts{l}.tol);
             opts{l} = setExtraOpts(opts{l},opts_new{l});
 
             start = make_start_x_Riem(prob{l});
-            opts{l}.N0 = opts{l}.N0_firstorder;
             [~,~,~,outs{l},N,tm_c] = LRGeomCG_outp(prob{l},opts{l},start);
             outs{l}.time=tm_c;
             outs{l}.N=N;
@@ -453,7 +461,7 @@ for l=1:nr_algos
     elseif contains(alg_name{l},'R3MC')
         opts{l} = default_opts_R3MC;
         opts{l} = setExtraOpts(opts{l},opts_new{l});
-        opts{l}.tol = 1e-8.*opts{l}.tol;
+        opts{l}.tol = opts{l}.tol;%1e-8.*opts{l}.tol;
         [rowind,colind]=find(Phi);
         prob{l}.d1     = d1;
         prob{l}.d2     = d2;

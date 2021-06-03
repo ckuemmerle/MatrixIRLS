@@ -1,19 +1,22 @@
 % Example script that compares the iteratively reweighted least squares
-% algorithms 'MatrixIRLS' of [1] with 'HM-IRLS' of [2].
+% algorithms 'MatrixIRLS' of [1,2] with 'HM-IRLS' of [3].
 %
 % For a description of the random model on the sampled entries, see
 % documentation of "sample_phi_MatrixCompletion.m". For a description of 
 % the model for the matrix X0 to be completed, see documentation of 
 % "sample_X0_lowrank.m".
 % =========================================================================
-% Author: Christian Kuemmerle, 2020.
+% Author: Christian Kuemmerle, 2020-2021.
 % =========================================================================
 % References:
-% [1] C. Kuemmerle, C. M. Verdun, "Escaping Saddle Points in 
+% [1] C. Kuemmerle, C. Mayrink Verdun, "A Scalable Second Order Method for 
+% Ill-Conditioned Matrix Completion from Few Samples", ICML 2021.
+%
+% [2] C. Kuemmerle, C. Mayrink Verdun, "Escaping Saddle Points in 
 % Ill-Conditioned Matrix Completion with a Scalable Second Order Method", 
 % ICML 2020 Workshop "Beyond First Order Methods in ML Systems".
 %
-% [2] C. Kuemmerle, J. Sigl, "Harmonic Mean Iteratively Reweighted Least
+% [3] C. Kuemmerle, J. Sigl, "Harmonic Mean Iteratively Reweighted Least
 % Squares for Low Rank Matrix Recovery", Journal of Machine Learning 
 % Research, 19(47):1?49, 2018.
 
@@ -68,7 +71,7 @@ opts_custom.N0 = 400;           % Max. number of (outer) iterations for
                                 % MatrixIRLS, R2RILS and RTRMC.
 opts_custom.N0_firstorder = 1000; % Max. number of iterations for 'first-order algorithms'.
 %%% Optional parameters addressing options of 'second-order algorithms'.
-opts_custom.tol_CG_fac=1e-4;    % tolerance for stopping criterion of inner iterations
+opts_custom.tol_CG = 1e-4;    % tolerance for stopping criterion of inner iterations
 opts_custom.N0_inner = 500;     % Max. number of (inner) iterations for 'second-order algorithms'
 
 

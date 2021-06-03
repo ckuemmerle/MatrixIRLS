@@ -21,10 +21,12 @@ function X = get_densemat_from_compact(XX,sps_plc,varargin)
 %       X = U^{(k)}*(\tilde{Gamma}_1*V^{(k)'}+\tilde{Gamma}_2)
 %           + \tilde{Gamma}_3*V^{(k)'} + P_{\Omega}^*(r_{k+1}).
 % =========================================================================
-% Reference:
-% [1] C. Kuemmerle, C. M. Verdun, "Escaping Saddle Points in 
+% Reference2:
+% [1] C. Kuemmerle, C. Mayrink Verdun, "Escaping Saddle Points in 
 % Ill-Conditioned Matrix Completion with a Scalable Second Order Method", 
 % ICML 2020 Workshop "Beyond First Order Methods in ML Systems".
+% [2] C. Kuemmerle, C. Mayrink Verdun, "A Scalable Second Order Method for 
+% Ill-Conditioned Matrix Completion from Few Samples", ICML 2021.
 % =========================================================================
 % Author: Christian Kuemmerle, 2019-2020.
 if nargin > 3

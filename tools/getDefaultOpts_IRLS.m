@@ -1,5 +1,9 @@
 function opts = getDefaultOpts_IRLS
-
+% =========================================================================
+% Reference:
+% [1] C. Kuemmerle, C. Mayrink Verdun, "A Scalable Second Order Method for 
+% Ill-Conditioned Matrix Completion from Few Samples", ICML 2021.
+% =========================================================================
 opts.p              = 0;  % Schatten-p parameter (p close to 0 for very non-convex objective, p=1 for convex)
 opts.N0             = 200;  % max. number of outer iterations (second order method like IRLS)
 opts.N0_inner       = 200;  % max. number of inner iterations (second order method like IRLS)

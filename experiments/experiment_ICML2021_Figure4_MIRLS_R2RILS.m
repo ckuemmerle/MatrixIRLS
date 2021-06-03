@@ -1,8 +1,6 @@
-% This script corresponds to the Figure 4 contained in the paper "Escaping 
-% Saddle Points in Ill-Conditioned Matrix Completion with a Scalable
-% Second Order Method" by Christian Kuemmerle and Claudio M. Verdun,
-% published at the ICML 2020 Workshop on 'Beyond First Order Methods in 
-% Machine Learning'.
+% This script reproduces the experiment of Figure 4 of the paper
+% C. Kuemmerle, C. Mayrink Verdun, "A Scalable Second Order Method for 
+% Ill-Conditioned Matrix Completion from Few Samples", ICML 2021.
 %
 % It performs a comparison of the execution time of different algorithms 
 % (in seconds) as a function  of the matrix size. In the paper, we compare
@@ -35,7 +33,7 @@ evaluation_time={};
 evaluation_time_average={};
 conv_experiments=[];
 
-modeX0      = 'condition_control_linear';%'condition_control_linear';%'condition_control_log'; % 1 , 2.
+modeX0      = 'condition_control_linear';
 complexflag = 0;
 cond_nr = 1e2;
 max_nr_resample = 1000;
@@ -141,9 +139,9 @@ ylabel('Execution time (seconds)')
 %% Save data and figure
 outs = remove_intermediate_iterates(outs);
 clear Xr;
-filename=strcat('experiment_MCalgos_ICML2020_Fig4_compareMIRLS_R2RILS_rk5and10');
-save(strcat(filename,'.mat'))
-savefig(strcat(filename,'.fig'))
+filename=strcat('experiment_MCalgos_ICML2021_Fig4_compareMIRLS_R2RILS_rk5and10');
+save(strcat('results/',filename,'.mat'))
+savefig(strcat('results/',filename,'.fig'))
 if exist('matlab2tikz')
-    matlab2tikz(strcat(filename,'.tex'))
+    matlab2tikz(strcat('results/',filename,'.tex'))
 end

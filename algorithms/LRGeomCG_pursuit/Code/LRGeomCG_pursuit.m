@@ -22,6 +22,12 @@ function [x,histout,stats,Xr,outs] = LRGeomCG_pursuit(prob, opts)
 %
 % Info and bugs: bart.vandereycken@epfl.ch
 % =========================================================================
+% This code implements a version of the Riemannian pursuit algorithm
+% presented in the papers:
+% [1] André Uschmajew, Bart Vandereycken, "Greedy rank updates combined with Riemannian descent methods 
+% for low-rank optimization", In Sampling Theory and Applications (SampTA), 
+% 2015 International Conference on, pages 420–424. IEEE, 2015.
+% [2] 
 % Code modified by Christian Kuemmerle:
 % - save intermediate iterates (if applicable)
 % - some adaptations to provide output to interface with other methods

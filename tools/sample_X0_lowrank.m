@@ -37,9 +37,11 @@ function [U0,V0] = sample_X0_lowrank(d1,d2,r,modeX0,complex,varargin)
 % [1] C. Kuemmerle, J. Sigl, "Harmonic Mean Iteratively Reweighted Least 
 % Squares for Low-Rank Matrix Recovery", Journal of Machine Learning 
 % Research, 19(47):1?49, 2018.
-% [2] C. Kuemmerle, C. M. Verdun, "Escaping Saddle Points in 
+% [2] C. Kuemmerle, C. Mayrink Verdun, "Escaping Saddle Points in 
 % Ill-Conditioned Matrix Completion with a Scalable Second Order Method", 
 % ICML 2020 Workshop "Beyond First Order Methods in ML Systems".
+% [3] C. Kuemmerle, C. Mayrink Verdun, "A Scalable Second Order Method for 
+% Ill-Conditioned Matrix Completion from Few Samples", ICML 2021.
 % =========================================================================
 if isfloat(modeX0)
     if (modeX0 == 1 || modeX0 == 2)
@@ -85,9 +87,12 @@ elseif strcmp(modeX0,'condition_control_1/x2') || strcmp(modeX0,'condition_contr
     elseif strcmp(modeX0,'condition_control_log')
         fct = @(l) cond_nr.*exp(-log(cond_nr).*([1:l]-1)./(r-1));
     elseif strcmp(modeX0,'condition_control_log_plateau')
-        fct = @(l) cond_nr.*[(exp(-log(cond_nr).*(((3/2).*[1:l/3])-1)./(r-1))),...
+        fct = @(l) cond_nr.*[(exp(-log(cond_nr).*(([1:3/2:l/2])-1)./(r-1))),...
             (exp(-log(cond_nr).*((r/2).*ones(1,2*r/3-r/3-1)-1)./(r-1))),...
             (exp(-log(cond_nr).*([r/2:3/2:l]-1)./(r-1)))];
+%         cond_nr.*[(10.^(-log10(cond_nr).*(([1:3/2:l/2])-1)./(r-1))),...
+%             (10.^(-log10(cond_nr).*((r/2).*ones(1,2*r/3-r/3-1)-1)./(r-1))),...
+%             (10.^(-log10(cond_nr).*([r/2:3/2:l]-1)./(r-1)))];
     elseif strcmp(modeX0,'condition_control_log_plateau_end') 
         fct = @(l) cond_nr.*[(exp(-log(cond_nr).*(((3/2).*[1:floor(2*l/3)])-1)./(r-1))),...
             (exp(-log(cond_nr).*(floor(r.*ones(1,r/3))-1)./(r-1)))];

@@ -9,7 +9,7 @@ function [Xr,outs] = ...
 % Ill-Conditioned Matrix Completion with a Scalable Second Order Method", 
 % ICML 2020 Workshop "Beyond First Order Methods in ML Systems".
 % [2] C. Kuemmerle, C. Mayrink Verdun, "A Scalable Second Order Method 
-% for Ill-Conditioned Matrix Completion from Few Samples", under revision.
+% for Ill-Conditioned Matrix Completion from Few Samples", ICML 2021.
 
 % See also: Chapter 2 of 
 % [3] C. Kuemmerle, "Understanding and Enhancing Data Recovery Algorithms From

@@ -1,12 +1,6 @@
-% This script corresponds to the Figure 3 contained in the paper "Escaping 
-% Saddle Points in Ill-Conditioned Matrix Completion with a Scalable
-% Second Order Method" by Christian Kuemmerle and Claudio M. Verdun,
-% published at the ICML 2020 Workshop on 'Beyond First Order Methods in 
-% Machine Learning'.
-
-% It performs a completion task for a highly ill-conditioned 1000 x 1000
-% matrix of rank r=10 with kappa=1e5 and with an oversampling rate of
-% rho=4.
+% This script reproduces the experiment of Figure 4 of the paper
+% C. Kuemmerle, C. Mayrink Verdun, "A Scalable Second Order Method for 
+% Ill-Conditioned Matrix Completion from Few Samples", ICML 2021.
 %
 % Author: Claudio M. Verdun, June 2020.
 %% Set parameters
@@ -30,19 +24,20 @@ max_nr_resample = 1000;
 modeX0      = 'condition_control_log'; % Singular values are interpolated 
 % in a logarithmic way between 1 and kappa
 complexflag = 0;
-cond_nr = 1e5; % condition number of the low rank matrix
+cond_nr = 1e10; % condition number of the low rank matrix
 [U0,V0] = sample_X0_lowrank(d1,d2,r,modeX0,complexflag,cond_nr);
 X0 = {U0,V0};
 y = partXY(U0',V0',rowind,colind,m).';
 %% Choose algorithms for matrix completion
-alg_names={'MatrixIRLS','R2RILS','RTRMC','LRGeomCG','LMaFit','ScaledASD','ScaledGD','NIHT'};
+alg_names={'MatrixIRLS','R2RILS','RTRMC','LRGeomCG','LMaFit','ScaledASD','ScaledGD','NIHT','R3MC'};
 opts_custom.p=0; %%% choose (non-)convexity parameters p for IRLS
 p=opts_custom.p;
-opts_custom.tol = 1e-9;
-opts_custom.tol_CG_fac=1e-5*cond_nr^(-1);
+opts_custom.tol = 1e-12;
+opts_custom.tol_CG = 1e-9;
 opts_custom.N0 = 400;
 opts_custom.N0_firstorder = 4000;
 opts_custom.N0_inner = 500; 
+opts.N_SVD          = 100;
 opts_custom.mode_linsolve = 'tangspace'; 
 opts_custom.type_mean={'geometric'};
 opts_custom.epsmin = 1e-16;
@@ -59,19 +54,23 @@ frob_mode = 'full';
 
 %% Visualization of Frobenius errors of iterates of algorithms
 %     visualize_errorcurves_combined(error_fro_rel,alg_names);
-plot_options.markers={'-x', '-+', '-*', '-o','-x', '-s', '-d', '-^'};
-plot_options.markerssize={5,5,5,5,5,5,5,5};
+plot_options.markers={'-x', '-+', '-*', '-o','-x', '-s', '-d', '-^','-v'};
+plot_options.markerssize={5,5,5,5,5,5,5,5,5};
 plot_options.maxtime = 60;
 plot_times_errors(outs,error_fro_rel,alg_names,plot_options);
-plot_options.ColorOrderIndices=[1,2,3,4,5,6,7,8,6];
+plot_options.ColorOrderIndices=[1,2,3,4,5,6,7,9,6];
 postprocess_fig(alg_names,'Time in seconds','Rel. Frob. error',plot_options);
 set(gcf,'name','Algorithmic comparisons: Completion of a $1000 \times 1000$ rank-$10$ matrix, $\kappa=10^5$')
 %% Save the data from simulation
 outs = remove_intermediate_iterates(outs);
 clear Xr;
-filename=strcat('experiment_MCalgos_ICML2020_Fig3_1000x1000_kappa1e5_rank10');
-save(strcat(filename,'.mat'))
-savefig(strcat(filename,'.fig'))
+filename=strcat('experiment_MCalgos_ICML2021_Fig3_1000x1000_kappa1e5_rank10');
+save(strcat('results/',filename,'.mat'))
+savefig(strcat('results/',filename,'.fig'))
 if exist('matlab2tikz')
-    matlab2tikz(strcat(filename,'.tex'))
+    matlab2tikz(strcat('results/',filename,'.tex'),...
+                'height', '\figureheight', 'width', '\figurewidth',...
+        'extraaxisoptions',['xlabel style={font=\tiny},',...
+        'ylabel style={font=\tiny},',...
+        'legend style={font=\fontsize{7}{30}\selectfont, anchor=south, legend columns = 3, at={(0.5,1.03)}}']);
 end

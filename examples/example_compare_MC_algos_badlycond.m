@@ -18,7 +18,7 @@
 % https://github.com/ckuemmerle/MatrixIRLS
 % and the function 'run_MC_algos.m'.
 % =========================================================================
-% Author: Christian Kuemmerle, 2018-2020.
+% Author: Christian Kuemmerle, 2018-2021.
 
 rng('shuffle')
 %% Set parameters
@@ -32,7 +32,7 @@ r = 5;
 df_LR = @(rr) rr*(d1 + d2 - rr);
 df_LR_val=df_LR(r);
 % Oversampling factor:
-oversampling = 2.0;
+oversampling = 2;
 % Number of measurements:
 m = floor(min(oversampling*df_LR_val,d1*d2));
 %% Sample the measurement matrix Phi (pattern of revealed entries) 
@@ -72,8 +72,8 @@ opts_custom.N0 = 400;           % Max. number of (outer) iterations for
                                 % MatrixIRLS, R2RILS and RTRMC.
 opts_custom.N0_firstorder = 1000; % Max. number of iterations for 'first-order algorithms'.
 %%% Optional parameters addressing options of 'second-order algorithms'.
-opts_custom.tol_CG_fac=1e-5;%*cond_nr^(-1);    % tolerance for stopping criterion of inner iterations
-opts_custom.N0_inner = 40;     % Max. number of (inner) iterations for 'second-order algorithms'
+opts_custom.tol_CG = 1e-10;%*cond_nr^(-1);    % tolerance for stopping criterion of inner iterations
+opts_custom.N0_inner = 50;     % Max. number of (inner) iterations for 'second-order algorithms'
 
 
 %%% Optional parameters addressing only options for IRLS
@@ -91,8 +91,8 @@ opts_custom.epsmin = 1e-16;
 opts_custom.tracking = 0;
 opts_custom.lambda = 0;
 opts_custom.increase_antisymmetricweights=0;
-opts_custom.saveiterates = 1;
-opts_custom.verbose = 1;
+opts_custom.saveiterates = 0;
+opts_custom.verbose = 0;
 
 %% Run algorithms for matrix completion
 [Xr,outs,alg_names] = run_MC_algos(Phi,yn,r,alg_names,opts_custom);

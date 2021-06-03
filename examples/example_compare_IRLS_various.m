@@ -1,24 +1,23 @@
 % Example script that compares the iteratively reweighted least squares
-% algorithms 'MatrixIRLS' of [1], a similar fast implementation of IRLS
-% with suboptimal weight operator 'arithmetic', the algorithm 'HM-IRLS' 
-% of [2], and the algorithm of [3] based on column reweighting ('IRLS-col', 
-% generalized for 0 <= p <= 1 arbitrary).
+% algorithms 'MatrixIRLS' of [1,2], a similar fast implementation of IRLS
+% with suboptimal weight operator 'arithmetic', and (a variant of) 
+% the algorithm of [3]  based on row/column reweighting 
+% ('IRLS-col','IRLS-row', generalized for 0 <= p <= 1 arbitrary).
 %
 % For a description of the random model on the sampled entries, see
 % documentation of "sample_phi_MatrixCompletion.m". For a description of 
 % the model for the matrix X0 to be completed, see documentation of 
 % "sample_X0_lowrank.m".
 % =========================================================================
-% Author: Christian Kuemmerle, 2020.
+% Author: Christian Kuemmerle, 2020-2021.
 % =========================================================================
 % References:
-% [1] C. Kuemmerle, C. M. Verdun, "Escaping Saddle Points in 
+% [1] C. Kuemmerle, C. Mayrink Verdun, "A Scalable Second Order Method for 
+% Ill-Conditioned Matrix Completion from Few Samples", ICML 2021.
+%
+% [2] C. Kuemmerle, C. Mayrink Verdun, "Escaping Saddle Points in 
 % Ill-Conditioned Matrix Completion with a Scalable Second Order Method", 
 % ICML 2020 Workshop "Beyond First Order Methods in ML Systems".
-%
-% [2] C. Kuemmerle, J. Sigl, "Harmonic Mean Iteratively Reweighted Least
-% Squares for Low Rank Matrix Recovery", Journal of Machine Learning 
-% Research, 19(47):1-49, 2018.
 %
 % [3] M. Fornasier, H. Rauhut, R. Ward, "Low-rank matrix recovery via 
 % iteratively reweighted least squares minimization. SIAM J. Optim., 
@@ -27,16 +26,16 @@
 rng('shuffle')
 %% Set parameters
 % Number of rows of the matrix that defines the problem:
-d1 = 150; 
+d1 = 400; 
 % Number of columns:
-d2 = 150; 
+d2 = 400; 
 % Rank:
 r = 5;
 % Number of degrees of freedom of the setting:
 df_LR = @(rr) rr*(d1 + d2 - rr);
 df_LR_val=df_LR(r);
 % Oversampling factor:
-oversampling = 2.0;
+oversampling = 4.0;
 % Number of measurements:
 m = floor(min(oversampling*df_LR_val,d1*d2));
 %% Sample the measurement matrix Phi (pattern of revealed entries) 
@@ -66,7 +65,7 @@ else
 end
 
 %% Choose algorithms for matrix completion
-alg_names={'MatrixIRLS','HM-IRLS','IRLS-col'};
+alg_names={'MatrixIRLS','IRLS-row','IRLS-col'};
 
 %%% Set optional algorithmic parameters
 opts_custom.tol = 1e-7;        % tolerance for stopping criterion
@@ -75,12 +74,12 @@ opts_custom.N0 = 400;           % Max. number of (outer) iterations for
                                 % MatrixIRLS, R2RILS and RTRMC.
 opts_custom.N0_firstorder = 1000; % Max. number of iterations for 'first-order algorithms'.
 %%% Optional parameters addressing options of 'second-order algorithms'.
-opts_custom.tol_CG_fac=1e-4;    % tolerance for stopping criterion of inner iterations
+opts_custom.tol_CG = 1e-4;    % tolerance for stopping criterion of inner iterations
 opts_custom.N0_inner = 500;     % Max. number of (inner) iterations for 'second-order algorithms'
 
 
 %%% Optional parameters addressing only options for IRLS
-opts_custom.p = [0,0.5]; % (non-)convexity parameters p for IRLS
+opts_custom.p = [0]; % (non-)convexity parameters p for IRLS
 % p = 0: sum of log objective
 % 0 < p < 1: Schatten-p quasi-norm.
 % p = 1: Nuclear norm.

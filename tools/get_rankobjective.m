@@ -1,8 +1,7 @@
 function objective_val = get_rankobjective(sing,eps,p,mode)
 %get_rankobjective This function evaluates the logdet or Schatten-p
 %objective associated to a given vector of (partial) singular values and
-%given a value of the epsilon smoothing eps. See: File
-%"IRLS_objective_functions.tex" for detailed definition of the objectives.
+%given a value of the epsilon smoothing eps.
 %  Input :               
 %                        sing = vector of singular values with values
 %                               larger than the smoothing parameter epsilon
@@ -27,7 +26,7 @@ switch mode
         if p == 0
             objective_val = sum(log(max(sing,eps))+0.5.*(min(sing,eps).^2./eps.^2-1));
         else
-            objective_val = sum(max(sing,eps).^p+(p/2).*(min(sing,eps).^2./eps.^(2-p)-1)); % ( times p, compared to what is written in the TeX document)
+            objective_val = sum(max(sing,eps).^p+(p/2).*(min(sing,eps).^2./eps.^(2-p)-1));
         end
     case 'pluseps'
         if p == 0
