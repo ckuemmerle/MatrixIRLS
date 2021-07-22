@@ -2,13 +2,13 @@
 # MatrixIRLS
 *Matrix Iteratively Reweighted Least Squares* (`MatrixIRLS`) for low-rank matrix completion.
 
-This repository contains a MATLAB implementation of the algorithm  `MatrixIRLS` described in the papers [Escaping Saddle Points in Ill-Conditioned Matrix Completion with a Scalable Second Order Method](https://drive.google.com/file/d/1s-ivhFNLEMe_tSgqUNd-oHD5HCEPiyMF/view) [(ICML 2020 Workshop: _"Beyond First Order Methods in ML Systems"_)](https://sites.google.com/view/optml-icml2020/home) and [A Scalable Second Order Method for Ill-Conditioned Matrix Completion from Few Samples](https://pages.jh.edu/kuemmerle/publication/km-21/MatrixIRLS_June2021.pdf) [(ICML 2021)](https://icml.cc/Conferences/2021/).
+This repository contains a MATLAB implementation of the algorithm  `MatrixIRLS` described in the papers [Escaping Saddle Points in Ill-Conditioned Matrix Completion with a Scalable Second Order Method](https://drive.google.com/file/d/1s-ivhFNLEMe_tSgqUNd-oHD5HCEPiyMF/view) [(ICML 2020 Workshop: _"Beyond First Order Methods in ML Systems"_)](https://sites.google.com/view/optml-icml2020/home) and [A Scalable Second Order Method for Ill-Conditioned Matrix Completion from Few Samples](http://proceedings.mlr.press/v139/kummerle21a.html) [(ICML 2021)](https://icml.cc/Conferences/2021/).
 
 `MatrixIRLS` is an algorithm that minimizes the sum of logarithms of the singular values of a matrix subject to a entry-wise data constraint, using Iteratively Reweighted Least Squares (IRLS) steps based on an _optimal weight operator_ combined with a suitable smoothing strategy for the objective.
 
 The implementation uses an adaptation of `bksvd` or [Block Krylov Singular Value Decompostion](https://github.com/cpmusco/bksvd) by Cameron Musco and Christopher Musco to compute singular values and vectors of matrices in a "low-rank + sparse" format. 
 
-The repository contains also a collection of **_reference algorithms_ for low-rank matrix completion**, see list below. In the experimental section of the [paper]((https://pages.jh.edu/kuemmerle/publication/km-21/MatrixIRLS_June2021.pdf)), `MatrixIRLS` is compared to these algorithms in terms of _data-efficiency_ (performance for few provided entries) and _scalability_. We provide the implementations of the reference algorithms for the user's convenience in the folder. These implementations all contain only minor modifications of the authors' original code (to allow for timing experiments). Please refer to the respective research papers and original implementations for a description of standard parameter choices.
+The repository contains also a collection of **_reference algorithms_ for low-rank matrix completion**, see list below. In the experimental section of the [paper]((http://proceedings.mlr.press/v139/kummerle21a.html)), `MatrixIRLS` is compared to these algorithms in terms of _data-efficiency_ (performance for few provided entries) and _scalability_. We provide the implementations of the reference algorithms for the user's convenience in the folder. These implementations all contain only minor modifications of the authors' original code (to allow for timing experiments). Please refer to the respective research papers and original implementations for a description of standard parameter choices.
 
 ## Citation
 If you refer to method, the code or the articles, please cite them as:
@@ -49,7 +49,7 @@ with suboptimal weight operator `'arithmetic'`, and algorithms `IRLS-col` and `I
 * `example_compare_MatrixIRLS_IRucLq_sIRLS`:
 Compares `MatrixIRLS` with the IRLS variants `IRLS-p` and `sIRLS-p` of [[MF12]](http://www.jmlr.org/beta/papers/v13/mohan12a.html) and `IRucLq` and `tIRucLq` of [[LXY13]](https://epubs.siam.org/doi/abs/10.1137/110840364) (the latter solves an *unconstrained* formulation, minimizing a rank suggorate + data fit term). Illustrates advantage of `MatrixIRLS` in terms of speed and accuracy.
 
-In the folder `experiments/`, you find the scripts reproducing the experiments of the [ICML 2021 paper](https://pages.jh.edu/kuemmerle/publication/km-21/MatrixIRLS_June2021.pdf).
+In the folder `experiments/`, you find the scripts reproducing the experiments of the [ICML 2021 paper](http://proceedings.mlr.press/v139/kummerle21a.html).
 
 ## List of algorithms
 We gratefully acknowledge the authors of the following matrix completion algorithms. For re-use of the algorithms the subfolders of `algorithms/` with the exception of `MatrixIRLS`, please refer to the provided links and contact the authors if the respective terms of usage are unclear.
@@ -59,7 +59,7 @@ We gratefully acknowledge the authors of the following matrix completion algorit
 * `LMaFit` (Low-rank Matrix Fitting algorithm [[WYZ12]](https://doi.org/10.1007/s12532-012-0044-1)) by Zaiwen Wen, Wotao Yin, and Yin Zhang, available [here](http://lmafit.blogs.rice.edu).
 * `LRGeomCG` (Low-rank matrix completion by Geometric CG [[V13]](https://doi.org/10.1137/110845768)) by Bart Vandereycken, [available]((http://www.unige.ch/math/vandereycken/matrix_completion.html)) at [Bart Vandereycken's website](http://www.unige.ch/math/vandereycken/research.php).
 * `LRGeomCG Pursuit` (also called Riemannian Pursuit) [[TTWVP14]](http://proceedings.mlr.press/v32/tan14.html), [[UV15]](https://ieeexplore.ieee.org/abstract/document/7148925), a Riemannian optimization method using adaptive updates of the rank of the fixed-rank manifold used in the optimization.
-* `MatrixIRLS` (Matrix Iteratively Reweighted Least Squares). This paper/repository.
+* `MatrixIRLS` (Matrix Iteratively Reweighted Least Squares). This [[paper]](http://proceedings.mlr.press/v139/kummerle21a.html)/repository.
 * `HM-IRLS` (Harmonic Mean Iteratively Reweighted Least Squares [[KS18]](http://www.jmlr.org/beta/papers/v19/17-244.html)) and `AM-IRLS` by Christian Kümmerle and Juliane Sigl, available [here](https://github.com/ckuemmerle/hm_irls).
 * `IRLS-p` and `sIRLS-p`: IRLS with weight operator acting on row space only, solving linear systems by gradient descent [[MF12]](http://www.jmlr.org/beta/papers/v13/mohan12a.html), by Karthik Mohan and Maryam Fazel, [available](https://faculty.washington.edu/mfazel/IRLS_final.zip) at [Maryam Fazel's website](https://faculty.washington.edu/mfazel/).
 * `IRucLq` and `tIRucLq` ((truncated) Iterative Reweighted unconstrained Lq for low-rank matrix recovery [[LXY13]](https://epubs.siam.org/doi/abs/10.1137/110840364)) by Zaiwen Wen, Wotao Yin and Yin Zhang, [available](https://xu-yangyang.github.io/codes/IRucLq.zip) at [Yangyang Xu's website](https://xu-yangyang.github.io/papers.html). 
